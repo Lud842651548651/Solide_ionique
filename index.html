@@ -1545,10 +1545,12 @@ function construireEnvoi() {
     prenom: id.prenom,
     nom: initiale,
     classe: id.classe,
-    score: `${bonnes}/${repondues}`,
+    score: `${marque}${bonnes}/${repondues} (parties réussies ${reussies}/3)`,
     pourcentage: pourcentage,
     partiesReussies: `${reussies}/3`,
-    temps: texteTemps(etat.tempsMs),
+    // Le worker écrit le champ « temps » dans le fichier : on y joint l’activité
+    // pour qu’elle apparaisse sans modifier le worker.
+    temps: `${texteTemps(etat.tempsMs)} | ACTIVITÉ ${resumeCourt()}`,
     date: date,
     details: details,
     modeProf: profUtilise,
@@ -1807,6 +1809,14 @@ function mediane(valeurs) {
   if (!valeurs.length) return 0;
   const tri = [...valeurs].sort((a, b) => a - b), m = Math.floor(tri.length / 2);
   return tri.length % 2 ? tri[m] : Math.round((tri[m - 1] + tri[m]) * 5) / 10;
+}
+
+/* Version courte, pour le fichier de résultats */
+function resumeCourt() {
+  const s = etat.suivi, n = s.temps.length;
+  return `sorties ${s.sorties} (${texteTemps(s.tempsDehorsMs)}) · copies ${s.copies} · ` +
+         `médiane ${String(mediane(s.temps)).replace(".", ",")} s/question · ` +
+         `<3 s : ${s.rapides}/${n} · après sortie : ${s.apresSortie}/${n}`;
 }
 
 function resumeSuivi() {

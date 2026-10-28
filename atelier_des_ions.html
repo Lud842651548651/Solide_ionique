@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L’Atelier des ions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;600&display=swap">
+
+<style>
+/* =====================================================================
+   L’ATELIER DES IONS — Seconde, physique-chimie
+   Mise en page : une colonne de lecture (≈ 70 caractères), un bandeau
+   « cristal » en tête, des onglets pour les 3 parties.
+   Couleurs porteuses de sens : orange = cation (+), bleu = anion (−).
+   Le sens n’est jamais porté par la couleur seule (signes + et − affichés).
+   ===================================================================== */
+:root{
+  --fond:#f1f4f2;        /* gris minéral légèrement vert */
+  --papier:#ffffff;
+  --encre:#18232c;
+  --doux:#56636d;
+  --trait:#d3dbd6;
+  --accent:#0d6b62;      /* vert-de-gris des minéraux */
+  --accent-doux:#e2eeea;
+  --cation:#b9420e;      /* orange : ions positifs */
+  --anion:#1e4fc4;       /* bleu : ions négatifs */
+  --ok:#157a3a;
+  --ko:#b3261e;
+  --bandeau:#13262b;
+  --bandeau-texte:#eef6f3;
+
+  --f-titre:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-texte:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --taille:1.0625rem;
+  --interligne:1.6;
+  --espacement-mots:normal;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --fond:#11191d; --papier:#18232a; --encre:#e4ece8; --doux:#9fb0aa; --trait:#2b3a41;
+    --accent:#5cbcae; --accent-doux:#1d3134; --cation:#f39a5f; --anion:#86a8ff;
+    --ok:#5fd38a; --ko:#ff8a80; --bandeau:#0b1417; --bandeau-texte:#e4f1ec;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --fond:#11191d; --papier:#18232a; --encre:#e4ece8; --doux:#9fb0aa; --trait:#2b3a41;
+  --accent:#5cbcae; --accent-doux:#1d3134; --cation:#f39a5f; --anion:#86a8ff;
+  --ok:#5fd38a; --ko:#ff8a80; --bandeau:#0b1417; --bandeau-texte:#e4f1ec;
+  color-scheme:dark;
+}
+
+/* ---------- Réglages d’accessibilité (choisis par l’élève) ---------- */
+:root[data-taille="1"]{--taille:1.2rem}
+:root[data-taille="2"]{--taille:1.35rem}
+:root[data-taille="3"]{--taille:1.55rem}
+:root[data-police="dys"]{--f-texte:"Lexend", "Atkinson Hyperlegible", system-ui, sans-serif; --interligne:1.9; --espacement-mots:.16em}
+:root[data-contraste="fort"]{
+  --fond:#ffffff; --papier:#ffffff; --encre:#000000; --doux:#1a1a1a; --trait:#000000;
+  --accent:#00483f; --accent-doux:#ffffff; --cation:#8a2a00; --anion:#002a99;
+  --ok:#005a1f; --ko:#8f0000; --bandeau:#000000; --bandeau-texte:#ffffff; color-scheme:light;
+}
+:root[data-mouvement="reduit"] *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--fond); color:var(--encre);
+  font-family:var(--f-texte); font-size:var(--taille); line-height:var(--interligne);
+  word-spacing:var(--espacement-mots);
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+h1,h2,h3{font-family:var(--f-titre); line-height:1.15; text-wrap:balance; margin:0}
+h2{font-size:1.6em} h3{font-size:1.15em; margin-top:1.4em}
+p{margin:.6em 0}
+sub,sup{font-size:.72em; line-height:0}
+a{color:var(--accent)}
+button,input,select{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.cache-visuel{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.enveloppe{max-width:52rem; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
+
+/* ---------- Bandeau ---------- */
+.bandeau{position:relative; background:var(--bandeau); color:var(--bandeau-texte); overflow:hidden}
+.bandeau canvas{position:absolute; inset:0; width:100%; height:100%; opacity:.55}
+.bandeau .enveloppe{position:relative; padding-block:28px 22px}
+.surtitre{font-size:.8em; letter-spacing:.12em; text-transform:uppercase; opacity:.85}
+.bandeau h1{font-size:clamp(2rem, 6vw, 3.2rem); font-weight:800; margin:.15em 0}
+.bandeau p{max-width:38rem; margin:.3em 0 0}
+.etat{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; align-items:center}
+.pastille{display:inline-flex; gap:6px; align-items:center; border:1px solid currentColor; border-radius:999px; padding:3px 12px; font-size:.85em; font-variant-numeric:tabular-nums}
+.pastille.faite{background:var(--bandeau-texte); color:var(--bandeau); border-color:var(--bandeau-texte)}
+
+/* ---------- Barre d’outils et onglets ---------- */
+.barre{position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--papier); border-bottom:1px solid var(--trait)}
+.barre .enveloppe{display:flex; flex-wrap:wrap; gap:6px; padding-block:8px; align-items:center}
+.onglets{display:flex; flex-wrap:wrap; gap:6px; flex:1 1 auto}
+.onglet{border:1px solid var(--trait); background:transparent; border-radius:8px; padding:6px 12px; cursor:pointer}
+.onglet[aria-selected="true"]{background:var(--accent); border-color:var(--accent); color:var(--papier)}
+.onglet:disabled{opacity:.5; cursor:not-allowed}
+.outil{border:1px solid var(--accent); color:var(--accent); background:transparent; border-radius:8px; padding:6px 12px; cursor:pointer}
+.confort{border-top:1px solid var(--trait); background:var(--accent-doux)}
+.confort .enveloppe{display:grid; gap:10px 18px; grid-template-columns:repeat(auto-fit,minmax(13rem,1fr)); padding-block:12px}
+.confort fieldset{border:0; margin:0; padding:0}
+.confort legend{font-weight:700; font-size:.9em; margin-bottom:4px}
+.choix{display:flex; flex-wrap:wrap; gap:6px}
+.choix button{border:1px solid var(--trait); background:var(--papier); border-radius:6px; padding:3px 10px; cursor:pointer}
+.choix button[aria-pressed="true"]{border-color:var(--accent); background:var(--accent); color:var(--papier)}
+
+/* ---------- Sections ---------- */
+main{padding-block:24px 64px}
+.partie > * + *{margin-top:14px}
+.objectif{color:var(--doux); font-size:.95em}
+.essentiel{background:var(--accent-doux); border:1px solid var(--accent); border-radius:10px; padding:12px 16px}
+.essentiel h3{margin:0 0 .3em; font-size:1em; letter-spacing:.06em; text-transform:uppercase; color:var(--accent)}
+.essentiel ul{margin:.2em 0; padding-left:1.2em}
+.cours{background:var(--papier); border:1px solid var(--trait); border-radius:10px; padding:4px 18px 16px}
+.lire{border:1px solid var(--trait); background:var(--papier); border-radius:6px; padding:2px 10px; font-size:.85em; cursor:pointer; color:var(--doux)}
+.equation{font-size:1.15em; text-align:center; padding:8px; margin:8px 0; border-radius:8px; background:var(--fond); overflow-x:auto; white-space:nowrap}
+.cat{color:var(--cation); font-weight:700}
+.ani{color:var(--anion); font-weight:700}
+.defile{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:.92em}
+th,td{border-bottom:1px solid var(--trait); padding:6px 8px; text-align:left; vertical-align:top}
+th{font-size:.85em; text-transform:uppercase; letter-spacing:.05em; color:var(--doux)}
+td.num{font-variant-numeric:tabular-nums}
+details.loin{border:1px dashed var(--accent); border-radius:10px; padding:8px 14px}
+details.loin summary{cursor:pointer; font-weight:700; color:var(--accent)}
+figure{margin:10px 0; text-align:center}
+figure svg{max-width:100%; height:auto}
+figcaption{font-size:.88em; color:var(--doux)}
+svg text{fill:var(--encre); font-family:var(--f-texte)}
+.recherche{width:100%; padding:8px 10px; border:1px solid var(--trait); border-radius:8px; background:var(--papier); margin:6px 0}
+
+/* ---------- Questionnaire ---------- */
+.quiz{background:var(--papier); border:2px solid var(--encre); border-radius:12px; padding:6px 18px 18px}
+.quiz-tete{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; align-items:baseline}
+.question{border-top:1px solid var(--trait); padding-top:14px; margin-top:14px}
+.question .enonce{font-weight:700}
+.options{display:grid; gap:6px; margin:8px 0}
+.option{display:block; width:100%; text-align:left; border:1px solid var(--trait); background:var(--papier); border-radius:8px; padding:8px 12px; cursor:pointer}
+.option:hover:not(:disabled){border-color:var(--accent)}
+.option:disabled{cursor:default}
+.option.juste{border:2px solid var(--ok); background:color-mix(in srgb, var(--ok) 14%, var(--papier))}
+.option.fausse{border:2px solid var(--ko); background:color-mix(in srgb, var(--ko) 12%, var(--papier))}
+.option.retiree{text-decoration:line-through; opacity:.45}
+.option.juste::after{content:"  ✓ bonne réponse"; font-weight:700; color:var(--ok)}
+.option.fausse::after{content:"  ✗ ton choix"; font-weight:700; color:var(--ko)}
+.aides{display:flex; flex-wrap:wrap; gap:6px}
+.aide{border:1px dashed var(--doux); background:transparent; border-radius:6px; padding:2px 10px; font-size:.85em; cursor:pointer; color:var(--doux)}
+.indice{background:var(--accent-doux); border-radius:8px; padding:6px 10px; font-size:.95em}
+.retour{margin-top:6px}
+.retour.ok{color:var(--ok)} .retour.ko{color:var(--ko)}
+.retour span{color:var(--encre)}
+.resultat{margin-top:16px; padding:12px 14px; border-radius:10px; border:2px solid var(--trait)}
+.resultat.reussi{border-color:var(--ok)} .resultat.rate{border-color:var(--ko)}
+.btn{border:0; background:var(--accent); color:var(--papier); border-radius:8px; padding:8px 16px; cursor:pointer; font-weight:700}
+.btn.secondaire{background:transparent; color:var(--accent); border:1px solid var(--accent)}
+.btn:disabled{opacity:.5; cursor:not-allowed}
+
+/* ---------- Accueil et bilan ---------- */
+.formulaire{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))}
+.formulaire label{display:grid; gap:4px; font-weight:700; font-size:.92em}
+.formulaire input{padding:8px 10px; border:1px solid var(--trait); border-radius:8px; background:var(--papier); font-weight:400}
+.message{font-size:.95em}
+.message.erreur{color:var(--ko)}
+textarea{width:100%; min-height:8rem; font:.85em/1.4 ui-monospace, monospace; border:1px solid var(--trait); border-radius:8px; padding:8px; background:var(--papier); color:var(--encre)}
+
+/* ---------- Aide-mémoire ---------- */
+dialog{border:1px solid var(--trait); border-radius:12px; background:var(--papier); color:var(--encre); max-width:min(46rem, calc(100vw - 24px)); padding:0}
+dialog::backdrop{background:rgba(10,20,25,.55)}
+.dialog-corps{padding:16px 18px; max-height:80vh; overflow:auto}
+
+/* ---------- Équations à compléter ---------- */
+.equation.trou{white-space:normal; line-height:2.4}
+.equation.trou select{font:inherit; padding:2px 6px; border:2px dashed var(--accent); border-radius:6px; background:var(--papier); color:var(--encre); margin:0 2px}
+.equation.trou select.juste{border:2px solid var(--ok)}
+.equation.trou select.fausse{border:2px solid var(--ko)}
+.solution{display:none; font-size:.85em; color:var(--ko); border-left:3px solid var(--ko); padding-left:8px; margin-top:6px}
+.voir-reponses .solution{display:block}
+
+/* ---------- Mode professeur ---------- */
+.prof{position:fixed; z-index:20; right:calc(12px + env(safe-area-inset-right,0px)); bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  background:var(--papier); color:var(--encre); border:2px dashed var(--ko); border-radius:10px; padding:10px 12px; width:min(17rem, calc(100vw - 24px)); font-size:.85rem; box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.prof b{color:var(--ko)}
+.prof-boutons{display:grid; gap:5px; margin-top:6px}
+.prof-boutons button{border:1px solid var(--trait); background:var(--fond); border-radius:6px; padding:4px 8px; cursor:pointer; text-align:left}
+</style>
+</head>
+
+<body>
+
+<!-- ============================ BANDEAU ============================ -->
+<header class="bandeau">
+  <canvas id="decor" aria-hidden="true"></canvas>
+  <div class="enveloppe">
+    <div class="surtitre">Physique-chimie · Seconde · Constitution de la matière</div>
+    <h1>L’Atelier des ions</h1>
+    <p>Comment un atome devient un ion, pourquoi le sel de cuisine s’écrit NaCl, et comment reconnaître une molécule, un atome, un cation ou un anion.</p>
+    <div class="etat" aria-live="polite">
+      <span class="pastille" id="pastille-1">Partie 1 : à faire</span>
+      <span class="pastille" id="pastille-2">Partie 2 : à faire</span>
+      <span class="pastille" id="pastille-3">Partie 3 : à faire</span>
+      <span class="pastille" id="chrono" title="Temps passé">⏱ 00:00</span>
+    </div>
+  </div>
+</header>
+
+<!-- ======================= BARRE D’OUTILS ========================== -->
+<div class="barre">
+  <div class="enveloppe">
+    <div class="onglets" role="tablist" aria-label="Parties">
+      <button class="onglet" role="tab" id="onglet-accueil" data-cible="accueil">Accueil</button>
+      <button class="onglet" role="tab" id="onglet-p1" data-cible="p1">1 · Les ions</button>
+      <button class="onglet" role="tab" id="onglet-p2" data-cible="p2">2 · Solides ioniques</button>
+      <button class="onglet" role="tab" id="onglet-p3" data-cible="p3">3 · Entités</button>
+      <button class="onglet" role="tab" id="onglet-bilan" data-cible="bilan">Bilan</button>
+    </div>
+    <button class="outil" id="bouton-aide" type="button">Aide-mémoire</button>
+    <button class="outil" id="bouton-confort" type="button" aria-expanded="false" aria-controls="confort">Confort de lecture</button>
+  </div>
+  <div class="confort" id="confort" hidden>
+    <div class="enveloppe">
+      <fieldset><legend>Taille du texte</legend>
+        <div class="choix" data-reglage="taille">
+          <button type="button" data-valeur="0">A</button><button type="button" data-valeur="1">A+</button>
+          <button type="button" data-valeur="2">A++</button><button type="button" data-valeur="3">A+++</button>
+        </div></fieldset>
+      <fieldset><legend>Police</legend>
+        <div class="choix" data-reglage="police">
+          <button type="button" data-valeur="standard">Standard</button>
+          <button type="button" data-valeur="dys">Adaptée (dys), plus espacée</button>
+        </div></fieldset>
+      <fieldset><legend>Contraste</legend>
+        <div class="choix" data-reglage="contraste">
+          <button type="button" data-valeur="normal">Normal</button><button type="button" data-valeur="fort">Renforcé</button>
+        </div></fieldset>
+      <fieldset><legend>Animations</legend>
+        <div class="choix" data-reglage="mouvement">
+          <button type="button" data-valeur="normal">Oui</button><button type="button" data-valeur="reduit">Non</button>
+        </div></fieldset>
+      <fieldset><legend>Chronomètre</legend>
+        <div class="choix" data-reglage="chrono">
+          <button type="button" data-valeur="visible">Affiché</button><button type="button" data-valeur="masque">Masqué</button>
+        </div></fieldset>
+      <fieldset><legend>Lecture à voix haute</legend>
+        <div class="choix"><button type="button" id="stop-voix">■ Arrêter la lecture</button></div>
+        <small>Les boutons « 🔊 Écouter » lisent le cours et les questions.</small></fieldset>
+    </div>
+  </div>
+</div>
+
+<main class="enveloppe">
+
+<!-- ============================ ACCUEIL ============================ -->
+<section class="partie" id="accueil" role="tabpanel" aria-labelledby="onglet-accueil">
+  <h2>Avant de commencer</h2>
+  <p>L’atelier comporte trois parties. Chacune commence par un cours, puis un questionnaire de <b>5 questions</b>.</p>
+  <ul>
+    <li>Il faut au moins <b>4 bonnes réponses sur 5 (80 %)</b> pour débloquer la partie suivante.</li>
+    <li>Une réponse validée ne peut plus être changée. Si tu n’atteins pas 80 %, tu recommences avec <b>de nouvelles questions</b>.</li>
+    <li>Sous chaque question, deux aides sont possibles : un <b>coup de pouce</b> (un indice) et <b>« retirer une réponse fausse »</b>. Elles ne font pas perdre de point.</li>
+    <li>Le bouton <b>Aide-mémoire</b> (en haut) rappelle les charges des particules et la liste des ions.</li>
+    <li>Le bouton <b>Confort de lecture</b> permet d’agrandir le texte, de changer de police, de renforcer le contraste ou d’écouter le texte.</li>
+  </ul>
+  <h3>Qui es-tu ?</h3>
+  <form id="identite" class="formulaire" novalidate>
+    <label for="prenom">Prénom<input id="prenom" autocomplete="given-name" required></label>
+    <label for="nom">Première lettre du nom de famille<input id="nom" maxlength="1" autocomplete="off" placeholder="ex. M" required></label>
+    <label for="classe">Classe<input id="classe" placeholder="ex. 2de 3" required></label>
+  </form>
+  <p class="message" id="message-identite" aria-live="polite"></p>
+  <button class="btn" id="commencer" type="button">Commencer l’atelier</button>
+</section>
+
+<!-- ========================= PARTIE 1 : IONS ========================= -->
+<section class="partie" id="p1" role="tabpanel" aria-labelledby="onglet-p1" hidden>
+  <h2>Partie 1 · Comment se forment les cations et les anions</h2>
+  <p class="objectif">Objectif : connaître les charges du proton et de l’électron, comprendre qu’un ion est un atome qui a perdu ou gagné des électrons, écrire et compléter l’équation de sa formation.</p>
+
+  <div class="essentiel">
+    <h3>L’essentiel</h3>
+    <ul>
+      <li>Le proton porte la charge <b>+e</b>, l’électron la charge <b>−e</b>, le neutron n’est pas chargé. La charge élémentaire vaut e = 1,6 × 10<sup>−19</sup> C.</li>
+      <li>Un atome a autant de protons que d’électrons : il est <b>électriquement neutre</b>.</li>
+      <li>Un atome qui <b>perd</b> des électrons devient un <span class="cat">cation (+)</span>. Un atome qui <b>gagne</b> des électrons devient un <span class="ani">anion (−)</span>.</li>
+      <li>Le noyau ne change pas : seul le nombre d’électrons change.</li>
+    </ul>
+  </div>
+
+  <article class="cours" id="cours-p1">
+    <p><button class="lire" type="button" data-lire="cours-p1">🔊 Écouter le cours</button></p>
+
+    <h3>1. Les charges électriques dans l’atome</h3>
+    <p>Une charge électrique se mesure en <b>coulombs</b> (symbole C). Dans l’atome, toutes les charges sont des multiples d’une même valeur, la <b>charge élémentaire</b>, notée e :</p>
+    <div class="equation">e = 1,6 × 10<sup>−19</sup> C</div>
+    <div class="defile"><table>
+      <thead><tr><th>Particule</th><th>Où se trouve-t-elle ?</th><th>Charge</th><th>En coulombs</th></tr></thead>
+      <tbody>
+        <tr><td>proton</td><td>dans le noyau</td><td class="cat">+e</td><td class="num">+1,6 × 10<sup>−19</sup> C</td></tr>
+        <tr><td>neutron</td><td>dans le noyau</td><td>0</td><td class="num">0 C</td></tr>
+        <tr><td>électron</td><td>autour du noyau</td><td class="ani">−e</td><td class="num">−1,6 × 10<sup>−19</sup> C</td></tr>
+      </tbody>
+    </table></div>
+    <p>Le proton et l’électron ont des charges <b>de même valeur et de signes opposés</b> : la charge d’un proton compense exactement celle d’un électron. Le noyau, qui contient les protons, est chargé positivement.</p>
+
+    <h3>2. L’atome est neutre</h3>
+    <p>Un atome possède <b>autant d’électrons que de protons</b>. Les charges se compensent : l’atome est électriquement neutre.</p>
+    <p>Exemple : l’atome de sodium Na possède 11 protons et 11 électrons. Sa charge vaut 11 × (+e) + 11 × (−e) = 0.</p>
+
+    <h3>3. Un cation : l’atome a perdu des électrons</h3>
+    <p>Si l’atome perd un ou plusieurs électrons, il a plus de charges + que de charges − : il devient un ion <span class="cat">positif, appelé cation</span>. Sa formule porte la charge en exposant.</p>
+    <figure id="figure-sodium"></figure>
+    <p>L’ion sodium a 11 protons et 10 électrons : sa charge vaut 11 × (+e) + 10 × (−e) = <b>+e</b>. On écrit simplement « + » : Na<sup>+</sup>.</p>
+    <p>L’ion magnésium a 12 protons et 10 électrons : sa charge vaut <b>+2e</b>. On écrit « 2+ » : Mg<sup>2+</sup>.</p>
+    <div class="equation">Na → Na<sup>+</sup> + e<sup>−</sup></div>
+    <div class="equation">Mg → Mg<sup>2+</sup> + 2 e<sup>−</sup></div>
+    <div class="equation">Al → Al<sup>3+</sup> + 3 e<sup>−</sup></div>
+
+    <h3>4. Un anion : l’atome a gagné des électrons</h3>
+    <p>Si l’atome gagne un ou plusieurs électrons, il a plus de charges − que de charges + : il devient un ion <span class="ani">négatif, appelé anion</span>.</p>
+    <figure id="figure-chlore"></figure>
+    <p>L’ion chlorure a 17 protons et 18 électrons : sa charge vaut <b>−e</b>, on écrit Cl<sup>−</sup>. L’ion oxyde a 8 protons et 10 électrons : sa charge vaut <b>−2e</b>, on écrit O<sup>2−</sup>.</p>
+    <div class="equation">Cl + e<sup>−</sup> → Cl<sup>−</sup></div>
+    <div class="equation">O + 2 e<sup>−</sup> → O<sup>2−</sup></div>
+
+    <h3>5. Écrire et compléter une équation de formation d’ion</h3>
+    <ol>
+      <li>À gauche de la flèche : l’<b>atome</b> (sans charge).</li>
+      <li>De l’autre côté : l’<b>ion</b>, avec sa charge.</li>
+      <li>Les <b>électrons</b> e<sup>−</sup> : à droite pour un cation (ils partent), à gauche pour un anion (ils arrivent). Il y en a autant que le chiffre de la charge.</li>
+      <li>Vérifier que la <b>charge est conservée</b> : même charge totale des deux côtés.</li>
+    </ol>
+    <p>Exemple : compléter « Ca → Ca<sup>2+</sup> + … ». L’ion calcium porte la charge 2+ : l’atome a perdu 2 électrons. On complète avec <b>2 e<sup>−</sup></b>.</p>
+    <div class="equation">Ca → Ca<sup>2+</sup> + 2 e<sup>−</sup></div>
+    <p>Vérification : à gauche, 0 ; à droite, (+2) + 2 × (−1) = 0. La charge est bien conservée.</p>
+
+    <h3>6. Les ions à connaître</h3>
+    <div class="defile"><table>
+      <thead><tr><th>Nom</th><th>Formule</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td>ion hydrogène</td><td class="cat">H<sup>+</sup></td><td>cation</td></tr>
+        <tr><td>ion sodium</td><td class="cat">Na<sup>+</sup></td><td>cation</td></tr>
+        <tr><td>ion potassium</td><td class="cat">K<sup>+</sup></td><td>cation</td></tr>
+        <tr><td>ion calcium</td><td class="cat">Ca<sup>2+</sup></td><td>cation</td></tr>
+        <tr><td>ion magnésium</td><td class="cat">Mg<sup>2+</sup></td><td>cation</td></tr>
+        <tr><td>ion chlorure</td><td class="ani">Cl<sup>−</sup></td><td>anion</td></tr>
+        <tr><td>ion fluorure</td><td class="ani">F<sup>−</sup></td><td>anion</td></tr>
+      </tbody>
+    </table></div>
+    <p>Les noms des anions finissent souvent en <b>-ure</b> (chlorure, fluorure). Les autres ions (Li<sup>+</sup>, Al<sup>3+</sup>, O<sup>2−</sup> ion oxyde, S<sup>2−</sup> ion sulfure) sont donnés dans les énoncés.</p>
+  </article>
+
+  <details class="loin">
+    <summary>Pour aller plus loin : la charge d’un ion en coulombs</summary>
+    <p>La charge d’un ion est un multiple de e. Pour l’ion magnésium Mg<sup>2+</sup> : q = 2 × e = 2 × 1,6 × 10<sup>−19</sup> = 3,2 × 10<sup>−19</sup> C.</p>
+    <p>Pour l’ion oxyde O<sup>2−</sup> : q = −2 × e = −3,2 × 10<sup>−19</sup> C.</p>
+    <p>Cette charge est minuscule : il faudrait environ 6 × 10<sup>18</sup> électrons pour atteindre une charge de 1 C.</p>
+  </details>
+
+  <div class="quiz" id="quiz-p1"></div>
+</section>
+
+<!-- ===================== PARTIE 2 : SOLIDES IONIQUES ===================== -->
+<section class="partie" id="p2" role="tabpanel" aria-labelledby="onglet-p2" hidden>
+  <h2>Partie 2 · Les solides ioniques et l’électroneutralité</h2>
+  <p class="objectif">Objectif : associer des cations et des anions pour écrire la formule d’un solide ionique, et connaître des solides ioniques du quotidien.</p>
+
+  <div class="essentiel">
+    <h3>L’essentiel</h3>
+    <ul>
+      <li>Un solide ionique est un empilement régulier de cations et d’anions.</li>
+      <li>La matière est <b>électriquement neutre</b> : dans le solide, les charges + compensent exactement les charges −.</li>
+      <li>La formule indique la <b>proportion</b> des ions, sans les charges, cation écrit en premier : Ca<sup>2+</sup> et Cl<sup>−</sup> donnent CaCl<sub>2</sub>.</li>
+    </ul>
+  </div>
+
+  <article class="cours" id="cours-p2">
+    <p><button class="lire" type="button" data-lire="cours-p2">🔊 Écouter le cours</button></p>
+
+    <h3>1. Un cristal d’ions</h3>
+    <p>Le sel de cuisine n’est pas fait de molécules. C’est un <b>cristal</b> : des ions sodium Na<sup>+</sup> et des ions chlorure Cl<sup>−</sup> alternent régulièrement dans les trois directions. Chaque ion est entouré d’ions de signe opposé qui l’attirent : c’est ce qui assure la solidité du cristal.</p>
+    <figure id="figure-cristal"></figure>
+
+    <h3>2. L’électroneutralité fixe la formule</h3>
+    <p>À notre échelle (macroscopique), un échantillon de matière n’est jamais chargé. Dans un solide ionique, la somme des charges des cations est donc égale, en valeur, à la somme des charges des anions.</p>
+    <p><b>Méthode pour écrire la formule</b></p>
+    <ol>
+      <li>Écrire les deux ions : <span class="cat">Ca<sup>2+</sup></span> et <span class="ani">Cl<sup>−</sup></span>.</li>
+      <li>Chercher les nombres qui rendent la charge totale nulle : 1 ion Ca<sup>2+</sup> apporte +2, il faut 2 ions Cl<sup>−</sup> pour apporter −2.</li>
+      <li>Écrire la formule sans les charges, le cation en premier, les nombres en indice : <b>CaCl<sub>2</sub></b>.</li>
+    </ol>
+    <div class="defile"><table>
+      <thead><tr><th>Cation</th><th>Anion</th><th>Proportion</th><th>Formule</th><th>Nom</th></tr></thead>
+      <tbody>
+        <tr><td class="cat">Na<sup>+</sup></td><td class="ani">Cl<sup>−</sup></td><td>1 pour 1</td><td>NaCl</td><td>chlorure de sodium</td></tr>
+        <tr><td class="cat">Ca<sup>2+</sup></td><td class="ani">Cl<sup>−</sup></td><td>1 pour 2</td><td>CaCl<sub>2</sub></td><td>chlorure de calcium</td></tr>
+        <tr><td class="cat">Mg<sup>2+</sup></td><td class="ani">O<sup>2−</sup></td><td>1 pour 1</td><td>MgO</td><td>oxyde de magnésium</td></tr>
+        <tr><td class="cat">Al<sup>3+</sup></td><td class="ani">O<sup>2−</sup></td><td>2 pour 3</td><td>Al<sub>2</sub>O<sub>3</sub></td><td>oxyde d’aluminium</td></tr>
+      </tbody>
+    </table></div>
+    <p>Le <b>nom</b> se construit à l’envers de la formule : d’abord l’anion (chlorure, oxyde…), puis « de » et le cation (sodium, calcium…).</p>
+    <p>Certains ions sont formés de plusieurs atomes (ions polyatomiques), par exemple l’ion carbonate CO<sub>3</sub><sup>2−</sup> ou l’ion hydroxyde HO<sup>−</sup>. Leur formule est toujours donnée dans l’énoncé. S’il en faut plusieurs, on les met entre parenthèses : Ca<sup>2+</sup> et HO<sup>−</sup> donnent Ca(OH)<sub>2</sub>.</p>
+
+    <h3>3. Dissolution dans l’eau</h3>
+    <p>Quand un solide ionique se dissout, les ions se dispersent dans l’eau. On les note (aq) pour « aqueux ». L’équation conserve les éléments et les charges.</p>
+    <div class="equation">NaCl(s) → Na<sup>+</sup>(aq) + Cl<sup>−</sup>(aq)</div>
+    <div class="equation">CaCl<sub>2</sub>(s) → Ca<sup>2+</sup>(aq) + 2 Cl<sup>−</sup>(aq)</div>
+    <div class="equation">Na<sub>2</sub>CO<sub>3</sub>(s) → 2 Na<sup>+</sup>(aq) + CO<sub>3</sub><sup>2−</sup>(aq)</div>
+    <p>Vérification des charges pour CaCl<sub>2</sub> : à gauche 0 ; à droite (+2) + 2 × (−1) = 0.</p>
+
+    <h3>4. Base de données : les solides ioniques du quotidien</h3>
+    <p>Tous ces solides sont utilisés dans la vie courante. Les questions du questionnaire sont tirées de cette liste. Tape un mot pour filtrer (par exemple « dent », « calcium » ou « cuisine »).</p>
+    <label class="cache-visuel" for="filtre-solides">Rechercher un solide ionique</label>
+    <input class="recherche" id="filtre-solides" type="search" placeholder="Rechercher : nom, ion, usage…">
+    <div class="defile"><table id="table-solides">
+      <thead><tr><th>Nom</th><th>Formule</th><th>Ions</th><th>À quoi ça sert</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p><small>Ions polyatomiques utilisés : hydroxyde HO<sup>−</sup>, carbonate CO<sub>3</sub><sup>2−</sup>, hydrogénocarbonate HCO<sub>3</sub><sup>−</sup>, sulfate SO<sub>4</sub><sup>2−</sup>, nitrate NO<sub>3</sub><sup>−</sup>, phosphate PO<sub>4</sub><sup>3−</sup>. Les ions des métaux de transition (Fe<sup>3+</sup>, Cu<sup>2+</sup>, Zn<sup>2+</sup>, Ti<sup>4+</sup>, Ag<sup>+</sup>) sont aussi donnés : tu n’as pas à les retenir.</small></p>
+  </article>
+
+  <details class="loin">
+    <summary>Pour aller plus loin (vers la première)</summary>
+    <p>La cohésion du cristal s’explique par l’<b>interaction électrostatique</b> (loi de Coulomb) : deux charges de signes opposés s’attirent, d’autant plus fort qu’elles sont proches et que leurs charges sont grandes. C’est pourquoi MgO (ions 2+ et 2−) fond à environ 2 850 °C alors que NaCl (ions + et −) fond à 801 °C.</p>
+    <p>Lors d’une dissolution de CaCl<sub>2</sub> à la concentration c, on obtient [Ca<sup>2+</sup>] = c et [Cl<sup>−</sup>] = 2c : le coefficient 2 de l’équation se retrouve dans les concentrations des ions.</p>
+  </details>
+
+  <div class="quiz" id="quiz-p2"></div>
+</section>
+
+<!-- ===================== PARTIE 3 : IDENTIFIER LES ENTITÉS ===================== -->
+<section class="partie" id="p3" role="tabpanel" aria-labelledby="onglet-p3" hidden>
+  <h2>Partie 3 · Identifier les entités chimiques</h2>
+  <p class="objectif">Objectif : distinguer espèce chimique et entité chimique, et nommer une entité (atome, molécule, cation, anion) à partir de sa formule.</p>
+
+  <div class="essentiel">
+    <h3>L’essentiel</h3>
+    <ul>
+      <li>Une <b>espèce chimique</b> (échelle macroscopique, ce qu’on manipule) est une collection d’un nombre <b>très élevé</b> d’<b>entités identiques</b> (échelle microscopique).</li>
+      <li>Pour nommer une entité, on regarde sa formule : une charge + → <span class="cat">cation</span> ; une charge − → <span class="ani">anion</span> ; pas de charge et un seul atome → atome ; pas de charge et plusieurs atomes liés → molécule.</li>
+    </ul>
+  </div>
+
+  <article class="cours" id="cours-p3">
+    <p><button class="lire" type="button" data-lire="cours-p3">🔊 Écouter le cours</button></p>
+
+    <h3>1. Deux échelles pour décrire la matière</h3>
+    <div class="defile"><table>
+      <thead><tr><th>Échelle macroscopique : l’espèce chimique</th><th>Échelle microscopique : l’entité chimique</th></tr></thead>
+      <tbody>
+        <tr><td>de l’eau dans un verre</td><td>la molécule H<sub>2</sub>O</td></tr>
+        <tr><td>un clou en fer</td><td>l’atome Fe</td></tr>
+        <tr><td>du sel de cuisine</td><td>les ions Na<sup>+</sup> et Cl<sup>−</sup></td></tr>
+        <tr><td>du sucre (saccharose)</td><td>la molécule C<sub>12</sub>H<sub>22</sub>O<sub>11</sub></td></tr>
+      </tbody>
+    </table></div>
+    <p>Une espèce chimique contient un nombre gigantesque d’entités identiques :</p>
+    <ul>
+      <li>une goutte d’eau (0,05 mL) contient environ 1,7 × 10<sup>21</sup> molécules H<sub>2</sub>O ;</li>
+      <li>un grain de sel contient environ 10<sup>18</sup> ions ;</li>
+      <li>un morceau de sucre contient environ 10<sup>22</sup> molécules de saccharose.</li>
+    </ul>
+    <p>Ces nombres sont si grands que les chimistes ne comptent pas les entités une par une : ils utilisent une unité adaptée, la mole, que tu étudieras plus tard.</p>
+
+    <h3>2. Espèces moléculaires et espèces ioniques</h3>
+    <p>Une <b>espèce moléculaire</b> est formée de molécules identiques : eau H<sub>2</sub>O, dioxyde de carbone CO<sub>2</sub>, glucose C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>, éthanol C<sub>2</sub>H<sub>6</sub>O.</p>
+    <p>Une <b>espèce ionique</b> est formée de cations et d’anions : chlorure de sodium NaCl, carbonate de calcium CaCO<sub>3</sub>. Attention : NaCl n’est <b>pas une molécule</b>. Cette formule indique seulement qu’il y a autant d’ions Na<sup>+</sup> que d’ions Cl<sup>−</sup>.</p>
+
+    <h3>3. Nommer une entité à partir de sa formule</h3>
+    <div class="defile"><table>
+      <thead><tr><th>La formule…</th><th>L’entité est…</th><th>Exemples</th></tr></thead>
+      <tbody>
+        <tr><td>porte une charge positive</td><td class="cat">un cation</td><td>Na<sup>+</sup>, Ca<sup>2+</sup>, NH<sub>4</sub><sup>+</sup>, H<sub>3</sub>O<sup>+</sup></td></tr>
+        <tr><td>porte une charge négative</td><td class="ani">un anion</td><td>Cl<sup>−</sup>, O<sup>2−</sup>, HO<sup>−</sup>, SO<sub>4</sub><sup>2−</sup></td></tr>
+        <tr><td>n’a pas de charge, un seul symbole sans indice</td><td>un atome</td><td>Fe, He, Cu, C</td></tr>
+        <tr><td>n’a pas de charge, plusieurs atomes liés</td><td>une molécule</td><td>H<sub>2</sub>O, O<sub>2</sub>, CO<sub>2</sub>, CH<sub>4</sub></td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Pièges fréquents</b></p>
+    <ul>
+      <li>O<sub>2</sub> (molécule de dioxygène, 2 atomes) n’est pas O<sup>2−</sup> (ion oxyde, chargé). Le chiffre <b>en bas</b> compte des atomes, le chiffre <b>en haut</b> indique une charge.</li>
+      <li>Un ion peut contenir plusieurs atomes : SO<sub>4</sub><sup>2−</sup> est un anion, pas une molécule, car il est chargé.</li>
+      <li>Une molécule peut contenir un seul élément : H<sub>2</sub>, N<sub>2</sub>, Cl<sub>2</sub> sont des molécules.</li>
+    </ul>
+    <p>Exemple : la dissolution du sel relie les deux échelles.</p>
+    <div class="equation">NaCl(s) → Na<sup>+</sup>(aq) + Cl<sup>−</sup>(aq)</div>
+    <p>À gauche, une espèce ionique solide ; à droite, deux sortes d’entités : un cation et un anion dispersés dans l’eau.</p>
+  </article>
+
+  <details class="loin">
+    <summary>Pour aller plus loin (vers la première)</summary>
+    <p>Les ions polyatomiques comme l’ion ammonium NH<sub>4</sub><sup>+</sup> ou l’ion oxonium H<sub>3</sub>O<sup>+</sup> se décrivent avec des schémas de Lewis : on place la charge sur l’atome qui a un électron de moins ou de plus que d’habitude. En première, l’ion oxonium H<sub>3</sub>O<sup>+</sup> sera au cœur de l’étude des acides.</p>
+  </details>
+
+  <div class="quiz" id="quiz-p3"></div>
+</section>
+
+<!-- ============================ BILAN ============================ -->
+<section class="partie" id="bilan" role="tabpanel" aria-labelledby="onglet-bilan" hidden>
+  <h2>Bilan</h2>
+  <p id="bilan-intro"></p>
+  <div class="defile"><table id="table-bilan">
+    <thead><tr><th>Partie</th><th>Réussie</th><th>Tentatives</th><th>Meilleur score</th><th>Bonnes réponses</th><th>Aides utilisées</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p id="bilan-total"></p>
+  <button class="btn" id="envoyer" type="button">Envoyer mes résultats au professeur</button>
+  <p class="message" id="message-envoi" aria-live="polite"></p>
+  <div id="secours" hidden>
+    <p>Si l’envoi ne fonctionne pas, copie ce texte et transmets-le à ton professeur :</p>
+    <label class="cache-visuel" for="texte-secours">Résultats à copier</label>
+    <textarea id="texte-secours" readonly></textarea>
+    <button class="btn secondaire" id="copier" type="button">Copier le texte</button>
+  </div>
+  <h3>Recommencer à zéro</h3>
+  <p>Efface la progression enregistrée sur cet appareil (à utiliser si un autre élève doit faire l’atelier).</p>
+  <button class="btn secondaire" id="reinitialiser" type="button">Tout effacer</button>
+  <p class="message" id="message-reinit" aria-live="polite"></p>
+</section>
+
+</main>
+
+<!-- ===================== MODE PROFESSEUR =====================
+     S’affiche quand l’adresse se termine par #prof (ou contient ?debug).
+     Les résultats envoyés pendant ce mode sont marqués [TEST PROF]. -->
+<aside id="panneau-prof" class="prof" hidden aria-label="Mode professeur">
+  <b>Mode professeur</b>
+  <div class="prof-boutons">
+    <button type="button" data-prof="valider-1">Valider la partie 1</button>
+    <button type="button" data-prof="valider-2">Valider la partie 2</button>
+    <button type="button" data-prof="valider-3">Valider la partie 3</button>
+    <button type="button" data-prof="remplir">Répondre juste à la partie affichée</button>
+    <button type="button" data-prof="voir">Afficher / masquer les bonnes réponses</button>
+    <button type="button" data-prof="envoyer">Envoyer un résultat de test</button>
+    <button type="button" data-prof="quitter">Quitter le mode professeur</button>
+  </div>
+</aside>
+
+<!-- ======================== AIDE-MÉMOIRE ======================== -->
+<dialog id="aide-memoire" aria-labelledby="titre-aide">
+  <div class="dialog-corps">
+    <h2 id="titre-aide">Aide-mémoire</h2>
+    <h3>Charges des particules</h3>
+    <div class="defile"><table>
+      <thead><tr><th>Particule</th><th>Charge</th></tr></thead>
+      <tbody><tr><td>proton (noyau)</td><td class="cat">+e</td></tr><tr><td>neutron (noyau)</td><td>0</td></tr><tr><td>électron</td><td class="ani">−e</td></tr></tbody>
+    </table></div>
+    <p>Charge élémentaire : e = 1,6 × 10<sup>−19</sup> C.</p>
+    <h3>Ions à connaître</h3>
+    <p><span class="cat">H<sup>+</sup> hydrogène · Na<sup>+</sup> sodium · K<sup>+</sup> potassium · Ca<sup>2+</sup> calcium · Mg<sup>2+</sup> magnésium</span><br>
+       <span class="ani">Cl<sup>−</sup> chlorure · F<sup>−</sup> fluorure</span></p>
+    <h3>Autres ions monoatomiques (donnés)</h3>
+    <p><span class="cat">Li<sup>+</sup> lithium · Al<sup>3+</sup> aluminium</span> · <span class="ani">O<sup>2−</sup> oxyde · S<sup>2−</sup> sulfure</span></p>
+    <h3>Ions polyatomiques (donnés)</h3>
+    <p><span class="ani">HO<sup>−</sup> hydroxyde · CO<sub>3</sub><sup>2−</sup> carbonate · HCO<sub>3</sub><sup>−</sup> hydrogénocarbonate · SO<sub>4</sub><sup>2−</sup> sulfate · NO<sub>3</sub><sup>−</sup> nitrate · PO<sub>4</sub><sup>3−</sup> phosphate</span><br>
+       <span class="cat">NH<sub>4</sub><sup>+</sup> ammonium · H<sub>3</sub>O<sup>+</sup> oxonium</span></p>
+    <h3>Règles</h3>
+    <ul>
+      <li>Cation : a perdu des électrons, charge +. Anion : a gagné des électrons, charge −.</li>
+      <li>Équation de formation : électrons à droite pour un cation, à gauche pour un anion ; la charge est conservée.</li>
+      <li>Formule d’un solide ionique : cation d’abord, pas de charge, charge totale nulle.</li>
+      <li>Chiffre en bas (indice) = nombre d’atomes. Chiffre en haut (exposant) = charge.</li>
+    </ul>
+    <button class="btn" type="button" id="fermer-aide">Fermer</button>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   1. RÉGLAGES DU PROFESSEUR
+   ---------------------------------------------------------------------
+   Tout ce qui concerne l’envoi des résultats est ici.
+   - urlWorker  : adresse du worker Cloudflare commun à tous les jeux.
+   - nomDuJeu   : sert à nommer le fichier dans le dépôt GitHub
+                  (resultats_<nomDuJeu>.txt).
+   - Si le worker attend d’autres noms de champs, il suffit de modifier
+     la fonction construireEnvoi() plus bas (section 9).
+   ===================================================================== */
+const REGLAGES = {
+  urlWorker: "https://resultatpolenord.lud-tek.workers.dev/",
+  nomDuJeu: "atelier_des_ions",
+  questionsParPartie: 5,
+  seuilReussite: 0.8,          // 80 % → 4 bonnes réponses sur 5
+  cleSauvegarde: "atelier-des-ions-v1"
+};
+
+
+/* =====================================================================
+   2. OUTILS D’ÉCRITURE DES FORMULES
+   ---------------------------------------------------------------------
+   On écrit les formules dans une notation simple, lisible dans le code :
+     "_2"   → indice 2      (H_2O  → H₂O)
+     "^2+"  → exposant 2+   (Ca^2+ → Ca²⁺)
+     "^-"   → exposant −    (Cl^-  → Cl⁻)
+   La fonction fx() transforme cette notation en HTML.
+   ===================================================================== */
+function fx(texte) {
+  return String(texte)
+    .replace(/_(\d+)/g, "<sub>$1</sub>")
+    .replace(/\^(\d*[+-])/g, (_, charge) => "<sup>" + charge.replace("-", "−") + "</sup>");
+}
+
+/* Même chose en caractères Unicode, pour le texte des menus déroulants
+   (une balise <option> ne peut pas contenir de HTML) : "Ca^2+" → "Ca²⁺" */
+const EXPOSANTS = { "0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹","+":"⁺","-":"⁻" };
+const INDICES   = { "0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉" };
+function uni(texte) {
+  return String(texte)
+    .replace(/_(\d+)/g, (_, d) => [...d].map(c => INDICES[c]).join(""))
+    .replace(/\^(\d*[+-])/g, (_, c) => [...c].map(x => EXPOSANTS[x]).join(""));
+}
+
+/* Écrit la formule d’un ion monoatomique : ion("Mg", 2) → "Mg^2+" */
+function ion(symbole, charge) {
+  const valeur = Math.abs(charge) === 1 ? "" : Math.abs(charge);
+  return symbole + "^" + valeur + (charge > 0 ? "+" : "-");
+}
+
+/* "1 électron", "2 électrons" */
+function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
+
+/* Électrons dans une équation : "e^-" ou "2 e^-" */
+function electrons(n) { return n === 1 ? "e^-" : n + " e^-"; }
+
+/* Hasard */
+const hasard = n => Math.floor(Math.random() * n);
+const auHasard = liste => liste[hasard(liste.length)];
+function melanger(liste) {
+  const copie = [...liste];
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = hasard(i + 1);
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+  return copie;
+}
+const sansDoublons = liste => [...new Set(liste)];
+
+/* Fabrique une question à choix multiple.
+   bonne       : la bonne réponse (texte en notation simple)
+   mauvaises   : les mauvaises réponses (on en garde 3 au maximum)
+   explication : affichée après la réponse
+   indice      : « coup de pouce » facultatif
+   ordreFixe   : true pour garder l’ordre des options (ex. atome / molécule / cation / anion) */
+function qcm({ enonce, bonne, mauvaises, explication, indice, ordreFixe = false }) {
+  const fausses = sansDoublons(mauvaises).filter(m => m !== bonne).slice(0, 3);
+  const options = ordreFixe ? [bonne, ...fausses] : melanger([bonne, ...fausses]);
+  return { enonce, options, bonne, explication, indice };
+}
+
+
+/* =====================================================================
+   3. DONNÉES : ÉLÉMENTS ET IONS MONOATOMIQUES (partie 1)
+   ===================================================================== */
+const ELEMENTS = [
+  // symbole, nom de l’atome, nombre de protons (= nombre d’électrons de l’atome), charge de l’ion,
+  // nom de l’ion, ion à connaître par cœur (programme) ou donné dans l’énoncé
+  { s: "H",  nom: "hydrogène", p: 1,  charge: +1, nomIon: "ion hydrogène", aConnaitre: true },
+  { s: "Li", nom: "lithium",   p: 3,  charge: +1, nomIon: "ion lithium",   aConnaitre: false },
+  { s: "O",  nom: "oxygène",   p: 8,  charge: -2, nomIon: "ion oxyde",     aConnaitre: false },
+  { s: "F",  nom: "fluor",     p: 9,  charge: -1, nomIon: "ion fluorure",  aConnaitre: true },
+  { s: "Na", nom: "sodium",    p: 11, charge: +1, nomIon: "ion sodium",    aConnaitre: true },
+  { s: "Mg", nom: "magnésium", p: 12, charge: +2, nomIon: "ion magnésium", aConnaitre: true },
+  { s: "Al", nom: "aluminium", p: 13, charge: +3, nomIon: "ion aluminium", aConnaitre: false },
+  { s: "S",  nom: "soufre",    p: 16, charge: -2, nomIon: "ion sulfure",   aConnaitre: false },
+  { s: "Cl", nom: "chlore",    p: 17, charge: -1, nomIon: "ion chlorure",  aConnaitre: true },
+  { s: "K",  nom: "potassium", p: 19, charge: +1, nomIon: "ion potassium", aConnaitre: true },
+  { s: "Ca", nom: "calcium",   p: 20, charge: +2, nomIon: "ion calcium",   aConnaitre: true }
+];
+
+
+/* =====================================================================
+   4. DONNÉES : IONS ET SOLIDES IONIQUES DU QUOTIDIEN (partie 2)
+   ---------------------------------------------------------------------
+   base : ce qu’on écrit dans la formule du solide (sans la charge)
+   poly : ion formé de plusieurs atomes → parenthèses s’il en faut plusieurs
+   ===================================================================== */
+const IONS = {
+  // cations
+  Na:  { f: "Na^+",   base: "Na",   charge: +1, nom: "ion sodium" },
+  K:   { f: "K^+",    base: "K",    charge: +1, nom: "ion potassium" },
+  Ag:  { f: "Ag^+",   base: "Ag",   charge: +1, nom: "ion argent" },
+  Ca:  { f: "Ca^2+",  base: "Ca",   charge: +2, nom: "ion calcium" },
+  Mg:  { f: "Mg^2+",  base: "Mg",   charge: +2, nom: "ion magnésium" },
+  Zn:  { f: "Zn^2+",  base: "Zn",   charge: +2, nom: "ion zinc" },
+  Cu:  { f: "Cu^2+",  base: "Cu",   charge: +2, nom: "ion cuivre(II)" },
+  Al:  { f: "Al^3+",  base: "Al",   charge: +3, nom: "ion aluminium" },
+  Fe3: { f: "Fe^3+",  base: "Fe",   charge: +3, nom: "ion fer(III)" },
+  Ti:  { f: "Ti^4+",  base: "Ti",   charge: +4, nom: "ion titane(IV)" },
+  // anions monoatomiques
+  Cl:  { f: "Cl^-",   base: "Cl",   charge: -1, nom: "ion chlorure" },
+  F:   { f: "F^-",    base: "F",    charge: -1, nom: "ion fluorure" },
+  Br:  { f: "Br^-",   base: "Br",   charge: -1, nom: "ion bromure" },
+  I:   { f: "I^-",    base: "I",    charge: -1, nom: "ion iodure" },
+  O:   { f: "O^2-",   base: "O",    charge: -2, nom: "ion oxyde" },
+  S:   { f: "S^2-",   base: "S",    charge: -2, nom: "ion sulfure" },
+  // anions polyatomiques
+  OH:   { f: "HO^-",    base: "OH",   charge: -1, nom: "ion hydroxyde",         poly: true },
+  HCO3: { f: "HCO_3^-", base: "HCO_3",charge: -1, nom: "ion hydrogénocarbonate", poly: true },
+  NO3:  { f: "NO_3^-",  base: "NO_3", charge: -1, nom: "ion nitrate",           poly: true },
+  CO3:  { f: "CO_3^2-", base: "CO_3", charge: -2, nom: "ion carbonate",         poly: true },
+  SO4:  { f: "SO_4^2-", base: "SO_4", charge: -2, nom: "ion sulfate",           poly: true },
+  PO4:  { f: "PO_4^3-", base: "PO_4", charge: -3, nom: "ion phosphate",         poly: true }
+};
+
+/* La base de données des solides ioniques.
+   cation, anion, nom, usage(s), soluble dans l’eau (true/false), mots-clés de catégorie */
+const SOLIDES = [
+  ["Na","Cl",  "chlorure de sodium",          "sel de cuisine ; salage des routes en hiver ; conservation des aliments", true,  "cuisine"],
+  ["K", "Cl",  "chlorure de potassium",       "« sel de régime » pauvre en sodium ; engrais pour les plantes", true,  "cuisine jardin"],
+  ["Ca","Cl",  "chlorure de calcium",         "absorbeur d’humidité des déshumidificateurs ; déneigement des routes", true,  "maison"],
+  ["Mg","Cl",  "chlorure de magnésium",       "« nigari » pour fabriquer le tofu ; complément alimentaire en magnésium", true,  "cuisine santé"],
+  ["Na","F",   "fluorure de sodium",          "ajouté aux dentifrices pour protéger l’émail des dents contre les caries", true,  "santé dent"],
+  ["K", "I",   "iodure de potassium",         "ajouté au sel de table (« sel iodé ») pour éviter le manque d’iode", true,  "cuisine santé"],
+  ["Ca","F",   "fluorure de calcium",         "minéral appelé fluorine ; lentilles d’objectifs photo de haute qualité", false, "minéral optique"],
+  ["Mg","O",   "oxyde de magnésium",          "briques des fours (résiste à la chaleur) ; médicament contre les brûlures d’estomac", false, "industrie santé"],
+  ["Ca","O",   "oxyde de calcium",            "« chaux vive » : fabrication du ciment, traitement des sols agricoles", false, "bâtiment jardin"],
+  ["Al","O",   "oxyde d’aluminium",           "« alumine » : papier de verre, rubis et saphirs, couche protectrice de l’aluminium", false, "minéral bijou"],
+  ["Fe3","O",  "oxyde de fer(III)",           "principal constituant de la rouille ; pigment rouge (ocre) des peintures", false, "peinture"],
+  ["Zn","O",   "oxyde de zinc",               "crèmes solaires (filtre minéral) ; pommades contre les irritations de la peau", false, "santé"],
+  ["Ti","O",   "dioxyde de titane",           "pigment blanc des peintures ; crèmes solaires", false, "peinture santé"],
+  ["Zn","S",   "sulfure de zinc",             "peintures phosphorescentes (aiguilles de montres, panneaux de sortie de secours)", false, "peinture"],
+  ["Ag","Br",  "bromure d’argent",            "pellicules de la photographie argentique (sensibles à la lumière)", false, "photo"],
+  ["Ca","CO3", "carbonate de calcium",        "calcaire, craie, marbre, coquilles d’œufs ; le tartre des bouilloires", false, "minéral maison"],
+  ["Na","HCO3","hydrogénocarbonate de sodium","« bicarbonate de soude » : levure chimique, cuisine, ménage", true,  "cuisine maison"],
+  ["Na","CO3", "carbonate de sodium",         "« cristaux de soude » : lessive et nettoyage", true,  "maison"],
+  ["K", "CO3", "carbonate de potassium",      "« potasse » utilisée pour faire lever le pain d’épices", true,  "cuisine"],
+  ["Na","OH",  "hydroxyde de sodium",         "« soude caustique » : déboucheurs de canalisations, fabrication du savon", true,  "maison"],
+  ["Ca","OH",  "hydroxyde de calcium",        "« chaux éteinte » : mortiers, enduits, traitement de l’eau", false, "bâtiment"],
+  ["Mg","OH",  "hydroxyde de magnésium",      "« lait de magnésie » : médicament contre l’acidité de l’estomac", false, "santé"],
+  ["Ca","SO4", "sulfate de calcium",          "gypse et plâtre ; craie des tableaux", false, "bâtiment école"],
+  ["Mg","SO4", "sulfate de magnésium",        "« sel d’Epsom » : sels de bain ; engrais", true,  "santé jardin"],
+  ["Cu","SO4", "sulfate de cuivre(II)",       "« bouillie bordelaise » : traitement des vignes contre les champignons", true,  "jardin"],
+  ["Al","SO4", "sulfate d’aluminium",         "traitement de l’eau potable : il fait s’agglomérer les impuretés", true,  "eau"],
+  ["K", "NO3", "nitrate de potassium",        "« salpêtre » : engrais ; conservateur des charcuteries (E252)", true,  "jardin cuisine"],
+  ["Ca","PO4", "phosphate de calcium",        "partie minérale des os et des dents ; engrais", false, "santé dent jardin"]
+].map(([cation, anion, nom, usage, soluble, categorie]) => construireSolide(cation, anion, nom, usage, soluble, categorie));
+
+/* Plus grand diviseur commun */
+function pgcd(a, b) { return b === 0 ? a : pgcd(b, a % b); }
+
+/* Écrit « ion » ou « (ion)_n » selon le nombre */
+function morceauFormule(ionChoisi, nombre) {
+  if (nombre === 1) return ionChoisi.base;
+  return (ionChoisi.poly ? "(" + ionChoisi.base + ")" : ionChoisi.base) + "_" + nombre;
+}
+
+/* À partir de deux ions, calcule les proportions qui respectent l’électroneutralité,
+   la formule et l’équation de dissolution. */
+function construireSolide(cleCation, cleAnion, nom, usage, soluble, categorie) {
+  const c = IONS[cleCation], a = IONS[cleAnion];
+  const d = pgcd(c.charge, -a.charge);
+  const nC = -a.charge / d;               // nombre de cations
+  const nA = c.charge / d;                // nombre d’anions
+  const formule = morceauFormule(c, nC) + morceauFormule(a, nA);
+  const coef = n => (n === 1 ? "" : n + " ");
+  return {
+    cation: c, anion: a, nC, nA, nom, usage, soluble, categorie, formule,
+    dissolution: `${formule}(s) → ${coef(nC)}${c.f}(aq) + ${coef(nA)}${a.f}(aq)`
+  };
+}
+
+
+/* =====================================================================
+   5. DONNÉES : ENTITÉS CHIMIQUES (partie 3)
+   ===================================================================== */
+const ENTITES = [
+  // atomes
+  ["Fe","atome de fer"],["Cu","atome de cuivre"],["He","atome d’hélium"],["Ne","atome de néon"],
+  ["Ar","atome d’argon"],["Na","atome de sodium"],["C","atome de carbone"],["Au","atome d’or"],
+  ["Al","atome d’aluminium"],["Zn","atome de zinc"],
+  // molécules
+  ["H_2O","eau"],["O_2","dioxygène"],["N_2","diazote"],["CO_2","dioxyde de carbone"],["CH_4","méthane"],
+  ["H_2","dihydrogène"],["NH_3","ammoniac"],["C_6H_12O_6","glucose"],["C_2H_6O","éthanol"],["O_3","ozone"],
+  ["HCl","chlorure d’hydrogène"],["Cl_2","dichlore"],["C_12H_22O_11","saccharose"],
+  // cations
+  ["Na^+","ion sodium"],["K^+","ion potassium"],["Ca^2+","ion calcium"],["Mg^2+","ion magnésium"],
+  ["H^+","ion hydrogène"],["Al^3+","ion aluminium"],["NH_4^+","ion ammonium"],["Fe^3+","ion fer(III)"],
+  ["Cu^2+","ion cuivre(II)"],["H_3O^+","ion oxonium"],
+  // anions
+  ["Cl^-","ion chlorure"],["F^-","ion fluorure"],["O^2-","ion oxyde"],["HO^-","ion hydroxyde"],
+  ["SO_4^2-","ion sulfate"],["CO_3^2-","ion carbonate"],["NO_3^-","ion nitrate"],["S^2-","ion sulfure"],
+  ["HCO_3^-","ion hydrogénocarbonate"],["PO_4^3-","ion phosphate"]
+].map(([f, nom]) => ({ f, nom, type: typeEntite(f) }));
+
+/* La règle du cours, écrite en code :
+   charge + → cation ; charge − → anion ; un seul symbole sans indice → atome ; sinon → molécule */
+function typeEntite(formule) {
+  if (formule.includes("^")) return formule.endsWith("+") ? "cation" : "anion";
+  if (/^[A-Z][a-z]?$/.test(formule)) return "atome";
+  return "molécule";
+}
+const TYPES = ["atome", "molécule", "cation", "anion"];
+const ARTICLE = { atome: "un atome", "molécule": "une molécule", cation: "un cation", anion: "un anion" };
+
+/* Espèces chimiques : moléculaires ou ioniques */
+const ESPECES = [
+  ["NaCl","chlorure de sodium (sel de cuisine)","ionique"],["H_2O","eau","moléculaire"],
+  ["CaCO_3","carbonate de calcium (calcaire)","ionique"],["C_12H_22O_11","saccharose (sucre)","moléculaire"],
+  ["KCl","chlorure de potassium","ionique"],["CO_2","dioxyde de carbone","moléculaire"],
+  ["NaOH","hydroxyde de sodium (soude)","ionique"],["C_2H_6O","éthanol","moléculaire"],
+  ["CH_4","méthane","moléculaire"],["MgO","oxyde de magnésium","ionique"],
+  ["C_6H_12O_6","glucose","moléculaire"],["CaCl_2","chlorure de calcium","ionique"],
+  ["NaHCO_3","bicarbonate de soude","ionique"],["NH_3","ammoniac","moléculaire"]
+];
+
+
+/* =====================================================================
+   6. BANQUES DE QUESTIONS
+   ---------------------------------------------------------------------
+   Chaque partie possède plusieurs « types » de questions. À chaque
+   tentative, on tire 5 types différents, et chaque type tire au hasard
+   un élément, un solide ou une entité : les questions changent à chaque fois.
+   ===================================================================== */
+
+/* ---------- Partie 1 : formation des ions ---------- */
+
+/* Écrit une charge en fonction de e : chargeEnE(2) → "+2e", chargeEnE(-1) → "−e" */
+function chargeEnE(c) {
+  if (c === 0) return "0 (neutre)";
+  return (c > 0 ? "+" : "−") + (Math.abs(c) === 1 ? "" : Math.abs(c)) + "e";
+}
+
+const TYPES_P1 = {
+
+  /* Équation à trous : l’élève choisit dans des menus déroulants (1 ou 2 cases à compléter) */
+  compléterÉquation() {
+    const e = auHasard(ELEMENTS), n = Math.abs(e.charge), X = e.s, Xion = ion(X, e.charge);
+    const autre = auHasard(ELEMENTS.filter(x => x.s !== X));
+    const caseAtome = { bonne: X,    options: [X, Xion, ion(X, -e.charge), autre.s] };
+    const caseIon   = { bonne: Xion, options: [Xion, ion(X, -e.charge), ion(X, e.charge > 0 ? e.charge + 1 : e.charge - 1), X] };
+    const caseElec  = { bonne: electrons(n), options: [electrons(n), electrons(n + 1), n > 1 ? electrons(n - 1) : electrons(n + 2)] };
+
+    // On choisit 1 ou 2 cases à vider ; les autres sont affichées.
+    const cases = melanger([caseAtome, caseIon, caseElec]).slice(0, 1 + hasard(2));
+    const morceau = c => cases.includes(c) ? { bonne: c.bonne, options: melanger(sansDoublons(c.options)) } : c.bonne;
+    const modele = e.charge > 0
+      ? [morceau(caseAtome), " → ", morceau(caseIon), " + ", morceau(caseElec)]
+      : [morceau(caseAtome), " + ", morceau(caseElec), " → ", morceau(caseIon)];
+    const complete = e.charge > 0 ? `${X} → ${Xion} + ${electrons(n)}` : `${X} + ${electrons(n)} → ${Xion}`;
+    return {
+      type: "trous",
+      enonce: `Complète l’équation de formation de l’${e.nomIon} :`,
+      modele, bonne: complete,
+      explication: `Équation complète : ${complete}. ${e.charge > 0
+        ? `L’atome perd ${pluriel(n, "électron")} : les électrons sont à droite.`
+        : `L’atome gagne ${pluriel(n, "électron")} : les électrons sont à gauche.`}`,
+      indice: "L’atome est sans charge. Cation : les électrons partent (à droite). Anion : les électrons arrivent (à gauche). Autant d’électrons que le chiffre de la charge."
+    };
+  },
+
+  ionObtenu() {
+    const e = auHasard(ELEMENTS), n = Math.abs(e.charge);
+    return qcm({
+      enonce: `L’atome de ${e.nom} (${e.s}) ${e.charge > 0 ? "perd" : "gagne"} ${pluriel(n, "électron")}. Quel ion obtient-on ?`,
+      bonne: ion(e.s, e.charge),
+      mauvaises: [ion(e.s, -e.charge), ion(e.s, e.charge > 0 ? e.charge + 1 : e.charge - 1), e.s, e.s + "_" + (n + 1)],
+      explication: e.charge > 0
+        ? `Perdre ${pluriel(n, "électron")}, c’est perdre ${n} charge(s) négative(s) : il reste ${chargeEnE(e.charge)}, d’où ${ion(e.s, e.charge)}.`
+        : `Gagner ${pluriel(n, "électron")}, c’est gagner ${n} charge(s) négative(s) : la charge devient ${chargeEnE(e.charge)}, d’où ${ion(e.s, e.charge)}.`,
+      indice: "Un électron porte la charge −e. Perdre des charges négatives rend l’entité positive."
+    });
+  },
+
+  gagneOuPerd() {
+    const e = auHasard(ELEMENTS), n = Math.abs(e.charge);
+    const perd = e.charge > 0;
+    return qcm({
+      enonce: `Pour devenir l’ion ${ion(e.s, e.charge)}, l’atome de ${e.nom}…`,
+      bonne: (perd ? "perd " : "gagne ") + pluriel(n, "électron"),
+      mauvaises: [(perd ? "gagne " : "perd ") + pluriel(n, "électron"),
+                  (perd ? "perd " : "gagne ") + pluriel(n, "proton"),
+                  (perd ? "gagne " : "perd ") + pluriel(n, "proton")],
+      explication: `Le noyau (les protons) ne change jamais. ${perd ? "Charge positive : il manque des électrons." : "Charge négative : il y a des électrons en plus."}`,
+      indice: "Un électron porte une charge négative. Perdre des charges négatives rend… ?"
+    });
+  },
+
+  équation() {
+    const e = auHasard(ELEMENTS), n = Math.abs(e.charge), X = e.s, Xion = ion(X, e.charge);
+    let bonne, mauvaises;
+    if (e.charge > 0) {
+      bonne = `${X} → ${Xion} + ${electrons(n)}`;
+      mauvaises = [`${X} + ${electrons(n)} → ${Xion}`, `${X} → ${Xion} + ${electrons(n + 1)}`, `${X} → ${ion(X, -e.charge)} + ${electrons(n)}`];
+    } else {
+      bonne = `${X} + ${electrons(n)} → ${Xion}`;
+      mauvaises = [`${X} → ${Xion} + ${electrons(n)}`, `${X} + ${electrons(n + 1)} → ${Xion}`, `${X} + ${electrons(n)} → ${ion(X, -e.charge)}`];
+    }
+    return qcm({
+      enonce: `Quelle équation modélise la formation de l’${e.nomIon} ${Xion} ?`,
+      bonne, mauvaises,
+      explication: `${bonne}. ${e.charge > 0 ? "Pour un cation, les électrons partent : ils sont à droite." : "Pour un anion, les électrons arrivent : ils sont à gauche."} La charge est conservée.`,
+      indice: "Vérifie que la charge totale est la même des deux côtés de la flèche."
+    });
+  },
+
+  nombreÉlectrons() {
+    const e = auHasard(ELEMENTS), bonne = e.p - e.charge;
+    const candidats = [e.p, e.p + e.charge, bonne + 1, bonne - 1, bonne + 2].filter(x => x >= 0);
+    return qcm({
+      enonce: `L’atome de ${e.nom} possède ${pluriel(e.p, "électron")}. Combien d’électrons possède l’ion ${ion(e.s, e.charge)} ?`,
+      bonne: String(bonne), mauvaises: melanger(candidats).map(String),
+      explication: `${e.charge > 0 ? "L’atome en perd " + e.charge : "L’atome en gagne " + (-e.charge)} : ${e.p} ${e.charge > 0 ? "−" : "+"} ${Math.abs(e.charge)} = ${bonne}.`,
+      indice: "Lis la charge de l’ion : « 2+ » veut dire 2 électrons en moins, « − » veut dire 1 électron en plus."
+    });
+  },
+
+  chargeDeLIon() {
+    const e = auHasard(ELEMENTS), nElec = e.p - e.charge;
+    return qcm({
+      enonce: `Un ${e.nomIon} contient ${pluriel(e.p, "proton")} et ${pluriel(nElec, "électron")}. Quelle est sa charge électrique ?`,
+      bonne: chargeEnE(e.charge),
+      mauvaises: [chargeEnE(-e.charge), chargeEnE(e.charge > 0 ? e.charge + 1 : e.charge - 1), chargeEnE(0)],
+      explication: `${e.p} × (+e) + ${nElec} × (−e) = ${chargeEnE(e.charge)}. L’ion s’écrit ${ion(e.s, e.charge)}.`,
+      indice: "Chaque proton apporte +e, chaque électron apporte −e. Fais le bilan."
+    });
+  },
+
+  cationOuAnion() {
+    const e = auHasard(ELEMENTS), estCation = e.charge > 0;
+    return qcm({
+      enonce: `L’ion ${ion(e.s, e.charge)} est…`,
+      bonne: estCation ? "un cation" : "un anion",
+      mauvaises: [estCation ? "un anion" : "un cation", "un atome", "une molécule"],
+      explication: estCation ? "Sa charge est positive : c’est un cation." : "Sa charge est négative : c’est un anion.",
+      indice: "Cation → charge +. Anion → charge −."
+    });
+  },
+
+  formuleDuNom() {
+    const connus = ELEMENTS.filter(x => x.aConnaitre);
+    const e = auHasard(connus), autre = auHasard(connus.filter(x => x.s !== e.s));
+    return qcm({
+      enonce: `Quelle est la formule de l’${e.nomIon} ?`,
+      bonne: ion(e.s, e.charge),
+      mauvaises: [ion(e.s, -e.charge), e.s + "_2", ion(autre.s, autre.charge), e.s],
+      explication: `L’${e.nomIon} s’écrit ${ion(e.s, e.charge)} : c’est un des ions à connaître.`,
+      indice: "Relis le tableau « Les ions à connaître » à la fin du cours."
+    });
+  },
+
+  chargesDesParticules() {
+    return auHasard([
+      () => qcm({ enonce: "Quelle est la charge électrique d’un électron ?",
+        bonne: "−e", mauvaises: ["+e", "0", "−2e"],
+        explication: "L’électron porte la charge −e, soit −1,6 × 10<sup>−19</sup> C.", indice: "L’électron est la particule négative de l’atome." }),
+      () => qcm({ enonce: "Quelle est la charge électrique d’un proton ?",
+        bonne: "+e", mauvaises: ["−e", "0", "+2e"],
+        explication: "Le proton porte la charge +e, soit +1,6 × 10<sup>−19</sup> C.", indice: "Le proton est la particule positive du noyau." }),
+      () => qcm({ enonce: "Quelle est la charge électrique d’un neutron ?",
+        bonne: "0 : il n’est pas chargé", mauvaises: ["+e", "−e", "+2e"],
+        explication: "Le neutron est neutre, comme son nom l’indique.", indice: "Pense au nom de cette particule." }),
+      () => qcm({ enonce: "Que vaut la charge élémentaire e ?",
+        bonne: "1,6 × 10<sup>−19</sup> C", mauvaises: ["1,6 × 10<sup>19</sup> C", "1,6 C", "−1,6 × 10<sup>−19</sup> C"],
+        explication: "e = 1,6 × 10<sup>−19</sup> C : c’est une valeur positive et minuscule.", indice: "e est une valeur positive et très petite." }),
+      () => qcm({ enonce: "Pourquoi un atome est-il électriquement neutre ?",
+        bonne: "Il possède autant de protons (+e) que d’électrons (−e)",
+        mauvaises: ["Il ne possède pas d’électrons", "Ses neutrons annulent les charges", "Ses protons ne sont pas chargés"],
+        explication: "Les charges +e des protons compensent exactement les charges −e des électrons.", indice: "Compare la charge d’un proton et celle d’un électron." }),
+      () => qcm({ enonce: "Un proton et un électron ont des charges…",
+        bonne: "de même valeur et de signes opposés",
+        mauvaises: ["identiques", "toutes les deux positives", "de valeurs différentes"],
+        explication: "+e et −e : même valeur e, signes contraires.", indice: "Relis le tableau des particules." })
+    ])();
+  },
+
+  notion() {
+    return auHasard([
+      () => qcm({ enonce: "Un cation est…",
+        bonne: "un ion chargé positivement : l’atome a perdu des électrons",
+        mauvaises: ["un ion chargé négativement : l’atome a gagné des électrons", "un atome qui a gagné des protons", "une molécule chargée négativement"],
+        explication: "Cation : charge +, électrons perdus.", indice: "Pense à Na^+ : qu’a fait l’atome de sodium ?" }),
+      () => qcm({ enonce: "Un anion est…",
+        bonne: "un ion chargé négativement : l’atome a gagné des électrons",
+        mauvaises: ["un ion chargé positivement : l’atome a perdu des électrons", "un atome qui a perdu des protons", "un atome neutre"],
+        explication: "Anion : charge −, électrons gagnés.", indice: "Pense à Cl^- : qu’a fait l’atome de chlore ?" }),
+      () => qcm({ enonce: "Quand un atome devient un ion, son noyau…",
+        bonne: "ne change pas : seul le nombre d’électrons change",
+        mauvaises: ["perd des protons", "gagne des neutrons", "change d’élément chimique"],
+        explication: "Le noyau garde tous ses protons : l’élément chimique reste le même.", indice: "Na et Na^+ sont-ils le même élément ?" }),
+      () => qcm({ enonce: "Dans l’équation Mg → Mg^2+ + 2 e^-, la charge est-elle conservée ?",
+        bonne: "Oui : 0 à gauche, (+2) + 2 × (−1) = 0 à droite",
+        mauvaises: ["Non : +2 à droite, 0 à gauche", "Non : les électrons ne comptent pas", "Oui : +2 des deux côtés"],
+        explication: "Les 2 électrons apportent −2, qui compense le +2 de l’ion.", indice: "Chaque électron compte pour −1." })
+    ])();
+  }
+};
+
+/* ---------- Partie 2 : solides ioniques ---------- */
+function formulesFausses(s) {
+  // formules plausibles mais fausses, pour servir de mauvaises réponses
+  const c = s.cation, a = s.anion;
+  return sansDoublons([
+    morceauFormule(c, s.nA) + morceauFormule(a, s.nC),   // proportions inversées
+    c.base + a.base,                                     // 1 pour 1
+    morceauFormule(c, s.nC) + morceauFormule(a, s.nA + 1),
+    morceauFormule(a, s.nA) + morceauFormule(c, s.nC),   // anion écrit en premier
+    c.f + a.f                                            // charges recopiées
+  ]).filter(f => f !== s.formule);
+}
+const description = (n, ionX) => `${n} ${n > 1 ? "ions" : "ion"} ${ionX.f}`;
+
+const TYPES_P2 = {
+
+  formuleDesIons() {
+    const s = auHasard(SOLIDES);
+    return qcm({
+      enonce: `Un solide ionique est formé d’ions ${s.cation.f} et d’ions ${s.anion.f}. Quelle est sa formule ?`,
+      bonne: s.formule, mauvaises: melanger(formulesFausses(s)),
+      explication: `Il faut ${description(s.nC, s.cation)} pour ${description(s.nA, s.anion)} : ${s.nC} × (${s.cation.charge > 0 ? "+" : ""}${s.cation.charge}) + ${s.nA} × (${s.anion.charge}) = 0. Formule : ${s.formule} (${s.nom}).`,
+      indice: "Cherche combien de chaque ion il faut pour que les charges + et − se compensent."
+    });
+  },
+
+  nomDeLaFormule() {
+    const s = auHasard(SOLIDES);
+    const autres = melanger(SOLIDES.filter(x => x.nom !== s.nom)).slice(0, 3).map(x => x.nom);
+    return qcm({
+      enonce: `Quel est le nom du solide ionique de formule ${s.formule} ?`,
+      bonne: s.nom, mauvaises: autres,
+      explication: `${s.formule} est formé d’ions ${s.cation.f} (${s.cation.nom}) et ${s.anion.f} (${s.anion.nom}) : c’est le ${s.nom}. Usage : ${s.usage}.`,
+      indice: "Le nom commence par l’anion (chlorure, oxyde, carbonate…), puis « de » et le cation."
+    });
+  },
+
+  ionsDuSolide() {
+    const s = auHasard(SOLIDES);
+    const bonne = `${description(s.nC, s.cation)} pour ${description(s.nA, s.anion)}`;
+    const mauvaises = [
+      `${description(s.nA, s.cation)} pour ${description(s.nC, s.anion)}`,
+      `${description(1, s.cation)} pour ${description(1, s.anion)}`,
+      `des molécules ${s.formule} identiques`,
+      `des atomes ${s.cation.base.replace(/_\d+/g, "")} et ${s.anion.base.replace(/_\d+/g, "")} neutres`,
+      `${description(s.nC, s.cation)} pour ${description(s.nA + 1, s.anion)}`
+    ];
+    return qcm({
+      enonce: `Le ${s.nom} a pour formule ${s.formule}. De quoi est-il constitué ?`,
+      bonne, mauvaises,
+      explication: `La formule ${s.formule} indique la proportion : ${bonne}. Ce n’est pas une molécule.`,
+      indice: "Les indices de la formule donnent le nombre de chaque ion."
+    });
+  },
+
+  usageQuotidien() {
+    const s = auHasard(SOLIDES);
+    const autres = melanger(SOLIDES.filter(x => x.nom !== s.nom)).slice(0, 3);
+    const etiquette = x => `${x.nom} (${x.formule})`;
+    return qcm({
+      enonce: `Quel solide ionique correspond à cet usage : ${s.usage} ?`,
+      bonne: etiquette(s), mauvaises: autres.map(etiquette),
+      explication: `C’est le ${s.nom}, ${s.formule}.`,
+      indice: "Tu peux chercher un mot de l’usage dans la base de données du cours."
+    });
+  },
+
+  dissolution() {
+    const s = auHasard(SOLIDES.filter(x => x.soluble));
+    const c = s.cation, a = s.anion, coef = n => (n === 1 ? "" : n + " ");
+    return qcm({
+      enonce: `Quelle équation modélise la dissolution du ${s.nom} dans l’eau ?`,
+      bonne: s.dissolution,
+      mauvaises: [
+        `${s.formule}(s) → ${coef(s.nA)}${c.f}(aq) + ${coef(s.nC)}${a.f}(aq)`,
+        `${s.formule}(s) → ${s.formule}(ℓ)`,
+        `${s.formule}(s) → ${c.f}(aq) + ${a.f}(aq) + ${s.formule}(aq)`,
+        `${s.formule}(s) → ${coef(s.nC)}${c.f}(aq) + ${coef(s.nA + 1)}${a.f}(aq)`
+      ],
+      explication: `Les ions se dispersent dans l’eau en gardant la proportion de la formule : ${s.dissolution}.`,
+      indice: "Les indices de la formule deviennent les nombres devant les ions. Vérifie que la charge totale à droite est nulle."
+    });
+  },
+
+  combienIons() {
+    const s = auHasard(SOLIDES.filter(x => x.nC !== x.nA || x.nC > 1 || Math.abs(x.anion.charge) > 1));
+    const choix = melanger(["1", "2", "3", "4"].filter(n => n !== String(s.nA)));
+    return qcm({
+      enonce: `Le ${s.nom} est formé d’ions ${s.cation.f} et ${s.anion.f}. Pour ${description(s.nC, s.cation)}, combien faut-il d’ions ${s.anion.f} pour que le solide soit neutre ?`,
+      bonne: String(s.nA), mauvaises: choix,
+      explication: `${s.nC} × (+${s.cation.charge}) = +${s.nC * s.cation.charge}, compensé par ${s.nA} × (${s.anion.charge}) = ${s.nA * s.anion.charge}. Formule : ${s.formule}.`,
+      indice: "Calcule la charge positive totale, puis le nombre d’anions qui donne la même charge négative."
+    });
+  },
+
+  chargeTotale() {
+    const s = auHasard(SOLIDES);
+    return qcm({
+      enonce: `Un cristal de ${s.nom} (${s.formule}) contient des milliards de milliards d’ions. Quelle est sa charge électrique totale ?`,
+      bonne: "nulle : les charges + compensent exactement les charges −",
+      mauvaises: ["positive, car le cation est écrit en premier", "négative, car il y a plus d’anions", `égale à la charge d’un ion ${s.cation.f}`],
+      explication: "La matière est électriquement neutre à l’échelle macroscopique : c’est l’électroneutralité.",
+      indice: "Un grain de sel t’a-t-il déjà donné une décharge électrique ?"
+    });
+  },
+
+  vraiOuFaux() {
+    const s = auHasard(SOLIDES);
+    const fausses = formulesFausses(s).filter(f => !f.includes("^"));
+    const proposeJuste = Math.random() < 0.5 || fausses.length === 0;
+    const proposee = proposeJuste ? s.formule : auHasard(fausses);
+    const OUI = "Oui, elle respecte l’électroneutralité";
+    const NON = "Non, elle ne respecte pas l’électroneutralité ou l’écriture";
+    return qcm({
+      enonce: `Pour un solide formé d’ions ${s.cation.f} et ${s.anion.f}, un élève écrit la formule ${proposee}. A-t-il raison ?`,
+      bonne: proposeJuste ? OUI : NON, mauvaises: [proposeJuste ? NON : OUI], ordreFixe: false,
+      explication: `La formule correcte est ${s.formule} : ${description(s.nC, s.cation)} pour ${description(s.nA, s.anion)}, cation écrit en premier.`,
+      indice: "Calcule la charge totale avec les indices de la formule proposée. Le cation est-il bien écrit en premier ?"
+    });
+  }
+};
+
+/* ---------- Partie 3 : identifier les entités ---------- */
+const TYPES_P3 = {
+
+  qualifier() {
+    const e = auHasard(ENTITES);
+    return qcm({
+      enonce: `Quel terme qualifie l’entité de formule ${e.f} ?`,
+      bonne: e.type, mauvaises: TYPES.filter(t => t !== e.type), ordreFixe: true,
+      explication: `${e.f} (${e.nom}) est ${ARTICLE[e.type]} : ${
+        { atome: "un seul symbole, sans indice ni charge.", "molécule": "plusieurs atomes liés, sans charge.",
+          cation: "la formule porte une charge positive.", anion: "la formule porte une charge négative." }[e.type]}`,
+      indice: "Regarde d’abord en haut à droite : y a-t-il une charge ? Puis en bas : y a-t-il des indices ?"
+    });
+  },
+
+  piègeDesChiffres() {
+    const [a, b] = auHasard([["H_2","H^+"],["O_2","O^2-"],["Cl_2","Cl^-"],["Na","Na^+"],["F_2","F^-"],["S","S^2-"],["N_2","NH_4^+"],["O_3","CO_3^2-"]]);
+    const ta = typeEntite(a), tb = typeEntite(b);
+    const paire = (x, y) => `${a} : ${x} ; ${b} : ${y}`;
+    const mauvaises = [];
+    TYPES.forEach(x => TYPES.forEach(y => { if (x !== ta || y !== tb) mauvaises.push(paire(x, y)); }));
+    return qcm({
+      enonce: `Que sont les entités ${a} et ${b} ?`,
+      bonne: paire(ta, tb), mauvaises: melanger(mauvaises),
+      explication: `${a} est ${ARTICLE[ta]}, ${b} est ${ARTICLE[tb]}. Chiffre en bas = nombre d’atomes ; chiffre en haut = charge.`,
+      indice: "Un chiffre en indice (en bas) n’est pas une charge."
+    });
+  },
+
+  trouverLeType() {
+    const t = auHasard(TYPES);
+    const bonne = auHasard(ENTITES.filter(e => e.type === t));
+    const autres = melanger(ENTITES.filter(e => e.type !== t)).slice(0, 3);
+    return qcm({
+      enonce: `Parmi ces entités, laquelle est ${ARTICLE[t]} ?`,
+      bonne: bonne.f, mauvaises: autres.map(e => e.f),
+      explication: `${bonne.f} (${bonne.nom}) est ${ARTICLE[t]}. ${autres.map(e => e.f + " : " + e.type).join(" ; ")}.`,
+      indice: "Cation : charge +. Anion : charge −. Atome : un seul symbole. Molécule : plusieurs atomes, pas de charge."
+    });
+  },
+
+  espèceIoniqueOuMoléculaire() {
+    const [f, nom, sorte] = auHasard(ESPECES);
+    const IONIQUE = "ionique : formée de cations et d’anions";
+    const MOLECULAIRE = "moléculaire : formée de molécules identiques";
+    return qcm({
+      enonce: `L’espèce chimique ${nom}, de formule ${f}, est une espèce…`,
+      bonne: sorte === "ionique" ? IONIQUE : MOLECULAIRE,
+      mauvaises: [sorte === "ionique" ? MOLECULAIRE : IONIQUE, "atomique : formée d’atomes isolés"],
+      explication: sorte === "ionique"
+        ? `${f} contient un métal associé à un ou plusieurs non-métaux : c’est un solide ionique, pas une molécule.`
+        : `${f} est formée de molécules identiques, sans charge.`,
+      indice: "Un métal (Na, K, Ca, Mg…) associé à un non-métal donne en général une espèce ionique."
+    });
+  },
+
+  espèceEtEntité() {
+    return auHasard([
+      () => qcm({ enonce: "Une espèce chimique est…",
+        bonne: "une collection d’un très grand nombre d’entités identiques",
+        mauvaises: ["une seule molécule isolée", "un mélange de plusieurs entités différentes", "un ion seul"],
+        explication: "L’espèce chimique est ce qu’on manipule (échelle macroscopique) ; elle contient un nombre gigantesque d’entités identiques.",
+        indice: "Pense à de l’eau dans un verre : combien de molécules ?" }),
+      () => qcm({ enonce: "Une goutte d’eau contient environ 1,7 × 10^21 molécules H_2O. Que montre ce nombre ?",
+        bonne: "Une espèce chimique contient un nombre immense d’entités identiques",
+        mauvaises: ["Une goutte d’eau contient environ 17 molécules", "Les molécules d’eau sont toutes différentes", "L’eau est une espèce ionique"],
+        explication: "10^21, c’est mille milliards de milliards : on ne peut pas compter les entités une par une.",
+        indice: "10^21 = 1 suivi de 21 zéros." }),
+      () => qcm({ enonce: "Dans un clou en fer, les entités chimiques sont…",
+        bonne: "des atomes de fer Fe", mauvaises: ["des molécules Fe_2", "des ions Fe^3+ seuls", "une seule grosse molécule"],
+        explication: "Le fer métallique est formé d’un très grand nombre d’atomes Fe identiques.",
+        indice: "Le fer est un métal pur." }),
+      () => qcm({ enonce: "Lequel désigne une entité chimique (échelle microscopique) ?",
+        bonne: auHasard(["un ion Cu^2+", "une molécule d’eau H_2O", "un atome de fer Fe", "un ion chlorure Cl^-"]),
+        mauvaises: melanger(["du sulfate de cuivre en poudre", "un verre d’eau", "un clou en fer", "du sel de cuisine", "un morceau de sucre"]),
+        explication: "Une entité est une particule unique (atome, molécule, ion). Ce qu’on voit et manipule est une espèce chimique.",
+        indice: "Peut-on le voir à l’œil nu ? Si oui, c’est une espèce chimique." }),
+      () => qcm({ enonce: "Lequel désigne une espèce chimique (échelle macroscopique) ?",
+        bonne: auHasard(["du sulfate de cuivre en poudre", "un verre d’eau", "du sel de cuisine", "un morceau de sucre"]),
+        mauvaises: melanger(["un ion Cu^2+", "une molécule d’eau H_2O", "un atome de fer Fe", "un ion chlorure Cl^-"]),
+        explication: "Une espèce chimique se manipule à notre échelle ; elle contient un très grand nombre d’entités.",
+        indice: "Peut-on le voir à l’œil nu ? Si oui, c’est une espèce chimique." }),
+      () => qcm({ enonce: "Le sel de cuisine a pour formule NaCl. Cela signifie que…",
+        bonne: "le cristal contient autant d’ions Na^+ que d’ions Cl^-",
+        mauvaises: ["le sel est formé de molécules NaCl", "le sel contient des atomes de sodium et de chlore neutres", "le sel est chargé positivement"],
+        explication: "NaCl est une espèce ionique : la formule donne la proportion des ions, ce n’est pas une molécule.",
+        indice: "Relis « Espèces moléculaires et espèces ioniques »." })
+    ])();
+  },
+
+  règleDeLaFormule() {
+    const regles = [
+      ["dont la formule porte une charge positive", "cation"],
+      ["dont la formule porte une charge négative", "anion"],
+      ["formée de plusieurs atomes liés, sans charge", "molécule"],
+      ["représentée par un seul symbole, sans indice ni charge", "atome"]
+    ];
+    const [texte, t] = auHasard(regles);
+    return qcm({
+      enonce: `Une entité ${texte} est…`,
+      bonne: ARTICLE[t], mauvaises: TYPES.filter(x => x !== t).map(x => ARTICLE[x]),
+      explication: `C’est ${ARTICLE[t]}.`, indice: "Relis le tableau « Nommer une entité à partir de sa formule »."
+    });
+  }
+};
+
+/* Tire les 5 questions d’une tentative */
+function tirerQuestions(numeroPartie) {
+  const n = REGLAGES.questionsParPartie;
+  if (numeroPartie === 1) {
+    // Partie 1 : toujours 2 équations à compléter (deux ions différents), plus 3 autres types
+    const { compléterÉquation, ...autresP1 } = TYPES_P1;
+    const t1 = compléterÉquation();
+    let t2 = compléterÉquation();
+    while (t2.bonne === t1.bonne) t2 = compléterÉquation();
+    return melanger([t1, t2, ...melanger(Object.values(autresP1)).slice(0, n - 2).map(f => f())]);
+  }
+  if (numeroPartie === 2) return melanger(Object.values(TYPES_P2)).slice(0, n).map(f => f());
+  // Partie 3 : toujours 2 questions « qualifier » (capacité centrale), plus 3 autres types
+  const { qualifier, ...autres } = TYPES_P3;
+  let q1 = qualifier(), q2 = qualifier();
+  while (q2.enonce === q1.enonce) q2 = qualifier();
+  const reste = melanger(Object.values(autres)).slice(0, n - 2).map(f => f());
+  return melanger([q1, q2, ...reste]);
+}
+
+/* ===================== FIN DES DONNÉES ===================== */
+/* ======================== INTERFACE ======================== */
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => [...document.querySelectorAll(sel)];
+
+
+/* =====================================================================
+   7. ÉTAT DU JEU ET SAUVEGARDE (sur l’appareil de l’élève)
+   ===================================================================== */
+function etatVide() {
+  return {
+    identite: null,                 // { prenom, nom, classe }
+    tempsMs: 0,                     // temps total passé
+    parties: [1, 2, 3].map(() => ({
+      reussie: false, tentatives: 0, meilleur: 0, bonnes: 0, repondues: 0, aides: 0
+    })),
+    envoye: false,
+    reglages: { taille: "0", police: "standard", contraste: "normal", mouvement: "normal", chrono: "visible" }
+  };
+}
+let etat = etatVide();
+try {
+  const lu = JSON.parse(localStorage.getItem(REGLAGES.cleSauvegarde) || "null");
+  if (lu && lu.parties) etat = Object.assign(etatVide(), lu);
+} catch (e) { /* pas de sauvegarde possible : on continue sans */ }
+
+function sauvegarder() {
+  try { localStorage.setItem(REGLAGES.cleSauvegarde, JSON.stringify(etat)); } catch (e) {}
+}
+
+/* Questions en cours (non sauvegardées : une nouvelle série est tirée à chaque ouverture) */
+const enCours = { 1: null, 2: null, 3: null };
+
+
+/* =====================================================================
+   8. CHRONOMÈTRE
+   ===================================================================== */
+let dernierTop = null;
+function formaterTemps(ms) {
+  const s = Math.round(ms / 1000), m = Math.floor(s / 60);
+  return String(m).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+}
+function texteTemps(ms) {
+  const s = Math.round(ms / 1000), m = Math.floor(s / 60);
+  return `${m} min ${String(s % 60).padStart(2, "0")} s`;
+}
+function chronoTourne() { return etat.identite && !etat.parties[2].reussie; }
+setInterval(() => {
+  const maintenant = Date.now();
+  if (chronoTourne() && dernierTop && document.visibilityState === "visible") {
+    etat.tempsMs += maintenant - dernierTop;
+  }
+  dernierTop = maintenant;
+  $("#chrono").textContent = "⏱ " + formaterTemps(etat.tempsMs);
+}, 1000);
+setInterval(sauvegarder, 5000);
+
+
+/* =====================================================================
+   9. ENVOI DES RÉSULTATS AU WORKER
+   ===================================================================== */
+function construireEnvoi() {
+  const id = etat.identite;
+  const bonnes = etat.parties.reduce((t, p) => t + p.bonnes, 0);
+  const repondues = etat.parties.reduce((t, p) => t + p.repondues, 0);
+  const pourcentage = repondues ? Math.round(100 * bonnes / repondues) : 0;
+  const reussies = etat.parties.filter(p => p.reussie).length;
+  const date = new Date().toLocaleString("fr-FR");
+  const initiale = id.nom.trim().charAt(0).toUpperCase() + ".";
+  const details = etat.parties.map((p, i) =>
+    `P${i + 1} ${p.reussie ? "réussie" : "non réussie"} (${p.tentatives} essai(s), meilleur ${p.meilleur}/5, aides ${p.aides})`
+  ).join(" ; ");
+  const marque = profUtilise ? "[TEST PROF] " : "";
+  const ligne = `${marque}${date} | ${id.prenom} ${initiale} | ${id.classe} | parties réussies ${reussies}/3 | ` +
+                `${bonnes}/${repondues} bonnes réponses | ${pourcentage} % | ${texteTemps(etat.tempsMs)} | ${details}`;
+  return {
+    jeu: REGLAGES.nomDuJeu,
+    fichier: "resultats_" + REGLAGES.nomDuJeu + ".txt",
+    prenom: id.prenom,
+    nom: initiale,
+    classe: id.classe,
+    score: `${bonnes}/${repondues}`,
+    pourcentage: pourcentage,
+    partiesReussies: `${reussies}/3`,
+    temps: texteTemps(etat.tempsMs),
+    date: date,
+    details: details,
+    modeProf: profUtilise,
+    ligne: ligne
+  };
+}
+
+async function envoyerResultats() {
+  const message = $("#message-envoi");
+  if (!etat.identite && modeProf()) etat.identite = { prenom: "Test", nom: "P", classe: "PROF" };
+  if (!etat.identite) { message.textContent = "Remplis d’abord ton prénom, l’initiale de ton nom et ta classe dans l’accueil."; return; }
+  const donnees = construireEnvoi();
+  $("#texte-secours").value = donnees.ligne;
+  message.className = "message";
+  message.textContent = "Envoi en cours…";
+  $("#envoyer").disabled = true;
+  try {
+    const reponse = await fetch(REGLAGES.urlWorker, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(donnees)
+    });
+    if (!reponse.ok) throw new Error("réponse " + reponse.status);
+    etat.envoye = true; sauvegarder();
+    message.textContent = "✅ Résultats envoyés à ton professeur. Tu peux fermer la page.";
+    $("#secours").hidden = true;
+  } catch (erreur) {
+    // Deuxième essai en mode simple (au cas où le navigateur bloque la première requête)
+    try {
+      await fetch(REGLAGES.urlWorker, { method: "POST", mode: "no-cors", body: JSON.stringify(donnees) });
+      etat.envoye = true; sauvegarder();
+      message.textContent = "Résultats envoyés, sans confirmation du serveur. Par précaution, copie aussi le texte ci-dessous.";
+    } catch (e2) {
+      message.className = "message erreur";
+      message.textContent = "L’envoi n’a pas fonctionné (connexion ?). Réessaie, ou copie le texte ci-dessous pour ton professeur.";
+    }
+    $("#secours").hidden = false;
+  } finally {
+    $("#envoyer").disabled = false;
+  }
+}
+
+
+/* =====================================================================
+   10. AFFICHAGE DES QUESTIONNAIRES
+   ===================================================================== */
+const seuil = () => Math.ceil(REGLAGES.questionsParPartie * REGLAGES.seuilReussite);
+
+function nouvelleTentative(n) {
+  enCours[n] = { questions: tirerQuestions(n), reponses: [] };
+  afficherQuiz(n);
+}
+
+function afficherQuiz(n) {
+  const zone = $("#quiz-p" + n), serie = enCours[n], stats = etat.parties[n - 1];
+  zone.innerHTML = `
+    <div class="quiz-tete">
+      <h3>Questionnaire · tentative ${stats.tentatives + 1}</h3>
+      <span>${seuil()} bonnes réponses sur ${REGLAGES.questionsParPartie} pour réussir</span>
+    </div>
+    ${serie.questions.map((q, i) => htmlQuestion(n, q, i)).join("")}
+    <div class="resultat" hidden aria-live="polite"></div>`;
+
+  serie.questions.forEach((q, i) => {
+    const bloc = $(`#q${n}-${i}`);
+    if (q.type === "trous") {
+      bloc.querySelector(".valider-trous").addEventListener("click", () => repondreTrous(n, i));
+    } else {
+      bloc.querySelectorAll(".option").forEach(bouton =>
+        bouton.addEventListener("click", () => repondre(n, i, Number(bouton.dataset.k))));
+    }
+    bloc.querySelector('[data-aide="indice"]').addEventListener("click", e => {
+      bloc.querySelector(".indice").hidden = false; e.target.disabled = true; compterAide(n);
+    });
+    bloc.querySelector('[data-aide="retirer"]').addEventListener("click", e => {
+      retirerUneFausse(bloc, q); e.target.disabled = true; compterAide(n);
+    });
+    bloc.querySelector('[data-aide="ecouter"]').addEventListener("click", () =>
+      lireAVoixHaute(bloc.querySelector(".enonce"), bloc.querySelector(".options, .equation")));
+  });
+}
+
+/* HTML d’une question : boutons pour un QCM, menus déroulants pour une équation à trous */
+function htmlQuestion(n, q, i) {
+  let corps;
+  if (q.type === "trous") {
+    corps = `<div class="equation trou">${q.modele.map((m, j) => typeof m === "string" ? fx(m) : `
+        <label class="cache-visuel" for="t${n}-${i}-${j}">Case à compléter</label>
+        <select id="t${n}-${i}-${j}" data-j="${j}">
+          <option value="">…</option>
+          ${m.options.map(o => `<option value="${o}">${uni(o)}</option>`).join("")}
+        </select>`).join("")}</div>
+      <button type="button" class="btn valider-trous">Valider</button>`;
+  } else {
+    corps = `<div class="options" role="group" aria-label="Réponses possibles à la question ${i + 1}">
+        ${q.options.map((o, k) => `<button type="button" class="option" data-k="${k}">${fx(o)}</button>`).join("")}
+      </div>`;
+  }
+  return `
+    <div class="question" id="q${n}-${i}">
+      <p class="enonce">${i + 1}. ${fx(q.enonce)}</p>
+      ${corps}
+      <div class="aides">
+        <button type="button" class="aide" data-aide="indice">Coup de pouce</button>
+        <button type="button" class="aide" data-aide="retirer">Retirer une réponse fausse</button>
+        <button type="button" class="aide" data-aide="ecouter">🔊 Écouter</button>
+      </div>
+      <div class="indice" hidden>${fx(q.indice || "")}</div>
+      <div class="solution">Réponse attendue : ${fx(q.bonne)}</div>
+      <div class="retour" aria-live="polite"></div>
+    </div>`;
+}
+
+/* Aide « retirer une réponse fausse » : un bouton pour un QCM, un choix par case pour une équation à trous */
+function retirerUneFausse(bloc, q) {
+  if (q.type === "trous") {
+    bloc.querySelectorAll("select").forEach(menu => {
+      const bonne = q.modele[menu.dataset.j].bonne;
+      const fausses = [...menu.options].filter(o => o.value && o.value !== bonne);
+      if (fausses.length > 1) auHasard(fausses).remove();
+    });
+    return;
+  }
+  const fausses = [...bloc.querySelectorAll(".option")].filter(b => q.options[b.dataset.k] !== q.bonne && !b.disabled);
+  if (fausses.length > 1) {
+    const b = auHasard(fausses);
+    b.disabled = true; b.classList.add("retiree"); b.setAttribute("aria-label", "réponse retirée");
+  }
+}
+
+/* Réponse à un QCM */
+function repondre(n, i, k) {
+  const serie = enCours[n], q = serie.questions[i];
+  if (serie.reponses[i] !== undefined) return;            // réponse déjà verrouillée
+  const juste = q.options[k] === q.bonne;
+  const bloc = $(`#q${n}-${i}`);
+  bloc.querySelectorAll(".option").forEach(b => {
+    b.disabled = true;
+    if (q.options[b.dataset.k] === q.bonne) b.classList.add("juste");
+  });
+  if (!juste) bloc.querySelector(`.option[data-k="${k}"]`).classList.add("fausse");
+  enregistrerReponse(n, i, juste);
+}
+
+/* Réponse à une équation à trous : juste seulement si toutes les cases sont justes */
+function repondreTrous(n, i) {
+  const serie = enCours[n], q = serie.questions[i];
+  if (serie.reponses[i] !== undefined) return;
+  const bloc = $(`#q${n}-${i}`), menus = [...bloc.querySelectorAll("select")];
+  const retour = bloc.querySelector(".retour");
+  if (menus.some(m => !m.value)) {
+    retour.className = "retour ko";
+    retour.textContent = "Choisis une réponse dans chaque case avant de valider.";
+    (menus.find(m => !m.value)).focus();
+    return;
+  }
+  let juste = true;
+  menus.forEach(m => {
+    const ok = m.value === q.modele[m.dataset.j].bonne;
+    if (!ok) juste = false;
+    m.disabled = true;
+    m.classList.add(ok ? "juste" : "fausse");
+  });
+  bloc.querySelector(".valider-trous").disabled = true;
+  enregistrerReponse(n, i, juste);
+}
+
+/* Partie commune : verrouillage, explication, statistiques */
+function enregistrerReponse(n, i, juste) {
+  const serie = enCours[n], q = serie.questions[i], bloc = $(`#q${n}-${i}`);
+  serie.reponses[i] = juste;
+  bloc.querySelectorAll(".aide:not([data-aide='ecouter'])").forEach(b => (b.disabled = true));
+  const retour = bloc.querySelector(".retour");
+  retour.className = "retour " + (juste ? "ok" : "ko");
+  retour.innerHTML = `<b>${juste ? "Bonne réponse." : "Réponse fausse."}</b> <span>${fx(q.explication)}</span>`;
+
+  const stats = etat.parties[n - 1];
+  stats.repondues++; if (juste) stats.bonnes++;
+  sauvegarder();
+
+  if (serie.reponses.filter(r => r !== undefined).length === serie.questions.length) terminerTentative(n);
+}
+
+function compterAide(n) { etat.parties[n - 1].aides++; sauvegarder(); }
+
+function terminerTentative(n) {
+  const serie = enCours[n], stats = etat.parties[n - 1];
+  const score = serie.reponses.filter(Boolean).length, total = serie.questions.length;
+  stats.tentatives++;
+  stats.meilleur = Math.max(stats.meilleur, score);
+  const reussi = score >= seuil();
+  const zone = $("#quiz-p" + n + " .resultat");
+  zone.hidden = false;
+
+  if (reussi) {
+    stats.reussie = true;
+    zone.className = "resultat reussi";
+    zone.innerHTML = n < 3
+      ? `<p><b>Partie réussie : ${score}/${total}.</b> La partie ${n + 1} est débloquée.</p>
+         <button class="btn" type="button" id="suite-${n}">Passer à la partie ${n + 1}</button>`
+      : `<p><b>Partie réussie : ${score}/${total}. Tu as terminé l’atelier !</b> Tes résultats sont envoyés à ton professeur.</p>
+         <button class="btn" type="button" id="suite-${n}">Voir mon bilan</button>`;
+    $("#suite-" + n).addEventListener("click", () => ouvrir(n < 3 ? "p" + (n + 1) : "bilan"));
+    if (n === 3) { sauvegarder(); majInterface(); envoyerResultats(); }
+  } else {
+    zone.className = "resultat rate";
+    zone.innerHTML = `<p><b>Score : ${score}/${total}.</b> Il faut au moins ${seuil()} bonnes réponses. Relis « L’essentiel » et les explications ci-dessus, puis recommence : les questions seront différentes.</p>
+      <button class="btn" type="button" id="encore-${n}">Recommencer avec de nouvelles questions</button>`;
+    $("#encore-" + n).addEventListener("click", () => { nouvelleTentative(n); $("#quiz-p" + n).scrollIntoView(); });
+  }
+  sauvegarder();
+  majInterface();
+  zone.scrollIntoView({ block: "nearest" });
+}
+
+
+/* =====================================================================
+   11. NAVIGATION, PROGRESSION, BILAN
+   ===================================================================== */
+function estAccessible(cible) {
+  if (cible === "accueil") return true;
+  if (modeProf()) return true;
+  if (!etat.identite) return false;
+  if (cible === "p1" || cible === "bilan") return true;
+  if (cible === "p2") return etat.parties[0].reussie;
+  if (cible === "p3") return etat.parties[1].reussie;
+  return false;
+}
+
+function ouvrir(cible) {
+  if (!estAccessible(cible)) return;
+  $$(".partie").forEach(s => (s.hidden = s.id !== cible));
+  $$(".onglet").forEach(o => o.setAttribute("aria-selected", String(o.dataset.cible === cible)));
+  const n = { p1: 1, p2: 2, p3: 3 }[cible];
+  if (n && !enCours[n]) nouvelleTentative(n);
+  if (cible === "bilan") afficherBilan();
+  window.scrollTo(0, 0);
+}
+
+function majInterface() {
+  $$(".onglet").forEach(o => {
+    const libre = estAccessible(o.dataset.cible);
+    o.disabled = !libre;
+    o.title = libre ? "" : "Partie verrouillée";
+  });
+  etat.parties.forEach((p, i) => {
+    const pastille = $("#pastille-" + (i + 1));
+    pastille.textContent = `Partie ${i + 1} : ` + (p.reussie ? "réussie ✓" : (p.tentatives ? "en cours" : "à faire"));
+    pastille.classList.toggle("faite", p.reussie);
+  });
+  $("#chrono").hidden = etat.reglages.chrono === "masque";
+}
+
+function afficherBilan() {
+  const id = etat.identite;
+  $("#bilan-intro").textContent = id
+    ? `${id.prenom} ${id.nom.charAt(0).toUpperCase()}. · ${id.classe} · temps passé : ${texteTemps(etat.tempsMs)}`
+    : "Commence par l’accueil.";
+  $("#table-bilan tbody").innerHTML = etat.parties.map((p, i) => `
+    <tr><td>Partie ${i + 1}</td><td>${p.reussie ? "oui" : "non"}</td><td class="num">${p.tentatives}</td>
+        <td class="num">${p.meilleur}/5</td><td class="num">${p.bonnes}/${p.repondues}</td><td class="num">${p.aides}</td></tr>`).join("");
+  const b = etat.parties.reduce((t, p) => t + p.bonnes, 0), r = etat.parties.reduce((t, p) => t + p.repondues, 0);
+  $("#bilan-total").innerHTML = `<b>Total : ${b} bonnes réponses sur ${r} (${r ? Math.round(100 * b / r) : 0} %).</b>` +
+    (etat.parties[2].reussie ? "" : " Tu n’as pas encore terminé : tu peux quand même envoyer où tu en es.");
+}
+
+
+/* =====================================================================
+   12. CONFORT DE LECTURE ET LECTURE À VOIX HAUTE
+   ===================================================================== */
+function appliquerReglages() {
+  const r = etat.reglages, racine = document.documentElement;
+  racine.dataset.taille = r.taille;
+  racine.dataset.police = r.police;
+  racine.dataset.contraste = r.contraste;
+  racine.dataset.mouvement = r.mouvement;
+  $$(".choix[data-reglage]").forEach(groupe => {
+    groupe.querySelectorAll("button").forEach(b =>
+      b.setAttribute("aria-pressed", String(r[groupe.dataset.reglage] === b.dataset.valeur)));
+  });
+  majInterface();
+}
+
+/* Transforme les indices et exposants en mots pour la synthèse vocale :
+   Ca²⁺ → « Ca, charge deux plus » ; H₂O → « H 2 O » */
+function texteParle(...elements) {
+  return elements.map(el => {
+    const copie = el.cloneNode(true);
+    copie.querySelectorAll("button.lire, label.cache-visuel").forEach(b => b.remove());
+    copie.querySelectorAll("select").forEach(m => m.replaceWith(" case à compléter "));
+    copie.querySelectorAll("sup").forEach(s => {
+      const t = s.textContent.trim();
+      const signe = t.endsWith("+") ? "plus" : "moins", nombre = t.slice(0, -1);
+      s.textContent = t.match(/^\d*[+−-]$/) ? ` charge ${nombre ? nombre + " " : ""}${signe} ` : ` puissance ${t} `;
+    });
+    copie.querySelectorAll("sub").forEach(s => (s.textContent = " " + s.textContent + " "));
+    copie.querySelectorAll(".option").forEach(o => (o.textContent = "Réponse : " + o.textContent + ". "));
+    return copie.textContent.replace(/→/g, " donne ").replace(/\s+/g, " ");
+  }).join(" ");
+}
+function lireAVoixHaute(...elements) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const phrase = new SpeechSynthesisUtterance(texteParle(...elements));
+  phrase.lang = "fr-FR"; phrase.rate = 0.95;
+  const voix = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith("fr"));
+  if (voix) phrase.voice = voix;
+  speechSynthesis.speak(phrase);
+}
+
+
+/* =====================================================================
+   13. DESSINS (atomes, cristal, bandeau)
+   ===================================================================== */
+/* Schéma simplifié de l’atome : un noyau chargé + et des électrons autour.
+   marque : true pour colorer en rouge l’électron qui part ou qui arrive */
+function dessinAtome(x, etiquette, protons, nbElectrons, legende, marque) {
+  const r = 50;
+  let svg = `<g transform="translate(${x},90)"><circle r="${r}" fill="none" stroke="var(--trait)" stroke-width="1.5" stroke-dasharray="3 4"/>`;
+  for (let k = 0; k < nbElectrons; k++) {
+    const angle = (2 * Math.PI * k) / nbElectrons - Math.PI / 2;
+    const special = marque && k === nbElectrons - 1;
+    svg += `<circle cx="${(r * Math.cos(angle)).toFixed(1)}" cy="${(r * Math.sin(angle)).toFixed(1)}" r="${special ? 5.5 : 3.5}" fill="${special ? "var(--ko)" : "var(--anion)"}"/>`;
+  }
+  svg += `<circle r="17" fill="var(--cation)"/><text text-anchor="middle" y="4" font-size="10" style="fill:var(--papier)">+${protons}e</text>`;
+  svg += `<text text-anchor="middle" y="-62" font-size="16" font-weight="700">${etiquette}</text>`;
+  svg += `<text text-anchor="middle" y="76" font-size="12">${legende}</text></g>`;
+  return svg;
+}
+function figureFormation(cible, gauche, droite, texteFleche, legendeFigure) {
+  $(cible).innerHTML = `<svg viewBox="0 0 520 190" role="img" aria-label="${legendeFigure}">
+      ${gauche}
+      <path d="M215 90 H300" stroke="var(--doux)" stroke-width="2.5" marker-end="url(#fleche-${cible.slice(1)})"/>
+      <defs><marker id="fleche-${cible.slice(1)}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--doux)"/></marker></defs>
+      <text x="257" y="78" text-anchor="middle" font-size="12">${texteFleche}</text>
+      ${droite}
+    </svg><figcaption>${legendeFigure}</figcaption>`;
+}
+
+function dessinerCristal() {
+  // Grille 2D alternée Na⁺ / Cl⁻ (vue en coupe d’un cristal de sel)
+  let s = `<svg viewBox="0 0 330 210" role="img" aria-label="Coupe d’un cristal de chlorure de sodium : ions sodium et chlorure alternés">`;
+  for (let ligne = 0; ligne < 5; ligne++) {
+    for (let col = 0; col < 8; col++) {
+      const x = 25 + col * 40, y = 25 + ligne * 40, estNa = (ligne + col) % 2 === 0;
+      s += estNa
+        ? `<circle cx="${x}" cy="${y}" r="11" fill="var(--cation)"/><text x="${x}" y="${y + 5}" text-anchor="middle" font-size="14" style="fill:var(--papier)">+</text>`
+        : `<circle cx="${x}" cy="${y}" r="17" fill="var(--anion)"/><text x="${x}" y="${y + 5}" text-anchor="middle" font-size="16" style="fill:var(--papier)">−</text>`;
+    }
+  }
+  s += `</svg><figcaption>Coupe d’un cristal de sel : <span class="cat">Na<sup>+</sup> (petites sphères, +)</span> et <span class="ani">Cl<sup>−</sup> (grosses sphères, −)</span> alternent. Il y a autant de + que de − : le cristal est neutre.</figcaption>`;
+  $("#figure-cristal").innerHTML = s;
+}
+
+function dessinerBandeau() {
+  // Réseau cristallin en perspective, décoratif
+  const toile = $("#decor"), ctx = toile.getContext("2d");
+  const largeur = toile.clientWidth, hauteur = toile.clientHeight, ratio = window.devicePixelRatio || 1;
+  toile.width = largeur * ratio; toile.height = hauteur * ratio; ctx.scale(ratio, ratio);
+  const style = getComputedStyle(document.documentElement);
+  const orange = style.getPropertyValue("--cation").trim() || "#b9420e";
+  const bleu = style.getPropertyValue("--anion").trim() || "#1e4fc4";
+  const pas = 46;
+  for (let j = -1; j < hauteur / pas + 2; j++) {
+    for (let i = -1; i < largeur / pas + 2; i++) {
+      const x = i * pas + (j % 2) * pas / 2 + largeur * 0.25, y = j * pas * 0.8;
+      if (x < largeur * 0.35) continue;                     // laisser le texte lisible à gauche
+      const cation = (i + j) % 2 === 0, r = cation ? 7 : 11;
+      const degrade = ctx.createRadialGradient(x - r / 3, y - r / 3, 1, x, y, r);
+      degrade.addColorStop(0, "rgba(255,255,255,.8)"); degrade.addColorStop(1, cation ? orange : bleu);
+      ctx.fillStyle = degrade; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+
+function remplirTableSolides(filtre = "") {
+  const f = filtre.trim().toLowerCase();
+  const lignes = SOLIDES.filter(s => !f ||
+    [s.nom, s.usage, s.categorie, s.cation.nom, s.anion.nom, s.formule].join(" ").toLowerCase().includes(f));
+  $("#table-solides tbody").innerHTML = lignes.length
+    ? lignes.map(s => `<tr><td>${s.nom}</td><td>${fx(s.formule)}</td>
+        <td><span class="cat">${fx(s.cation.f)}</span> et <span class="ani">${fx(s.anion.f)}</span></td><td>${s.usage}</td></tr>`).join("")
+    : `<tr><td colspan="4">Aucun solide ne correspond à « ${filtre} ».</td></tr>`;
+}
+
+
+/* =====================================================================
+   14. MODE PROFESSEUR
+   ---------------------------------------------------------------------
+   Pour l’activer : ajouter #prof à la fin de l’adresse de la page
+   (ex. https://…/atelier_des_ions.html#prof), ou ?debug.
+   Toutes les parties s’ouvrent, et un panneau permet de valider une
+   partie, de répondre juste automatiquement ou de voir les réponses.
+   ===================================================================== */
+let profUtilise = false;
+function modeProf() { return /(^|[#?&])(prof|debug)\b/.test(location.hash + location.search); }
+
+function majModeProf() {
+  const actif = modeProf();
+  $("#panneau-prof").hidden = !actif;
+  if (actif) profUtilise = true;
+  else document.documentElement.classList.remove("voir-reponses");
+  majInterface();
+}
+
+function partieAffichee() {
+  const visible = $$(".partie").find(p => !p.hidden);
+  return visible ? { p1: 1, p2: 2, p3: 3 }[visible.id] : undefined;
+}
+
+function actionProf(action) {
+  if (action.startsWith("valider-")) {
+    const n = Number(action.slice(-1));
+    etat.parties[n - 1].reussie = true;
+    sauvegarder(); majInterface();
+    ouvrir(n < 3 ? "p" + (n + 1) : "bilan");
+  } else if (action === "remplir") {
+    const n = partieAffichee();
+    if (!n || !enCours[n]) return;
+    enCours[n].questions.forEach((q, i) => {
+      if (enCours[n].reponses[i] !== undefined) return;
+      if (q.type === "trous") {
+        $(`#q${n}-${i}`).querySelectorAll("select").forEach(m => (m.value = q.modele[m.dataset.j].bonne));
+        repondreTrous(n, i);
+      } else {
+        repondre(n, i, q.options.indexOf(q.bonne));
+      }
+    });
+  } else if (action === "voir") {
+    document.documentElement.classList.toggle("voir-reponses");
+  } else if (action === "envoyer") {
+    ouvrir("bilan"); envoyerResultats();
+  } else if (action === "quitter") {
+    history.replaceState(null, "", location.pathname + location.search.replace(/[?&]debug\b[^&]*/, ""));
+    majModeProf();
+    ouvrir("accueil");
+  }
+}
+
+
+/* =====================================================================
+   15. DÉMARRAGE ET BRANCHEMENT DES BOUTONS
+   ===================================================================== */
+function demarrer() {
+  // Figures du cours
+  figureFormation("#figure-sodium",
+    dessinAtome(110, "Atome Na", 11, 11, "11 × (+e) + 11 × (−e) = 0", true),
+    dessinAtome(410, "Ion Na⁺", 11, 10, "11 × (+e) + 10 × (−e) = +e", false),
+    "perd 1 e⁻", "L’atome de sodium perd un électron (en rouge) et devient l’ion Na⁺. Le noyau ne change pas.");
+  figureFormation("#figure-chlore",
+    dessinAtome(110, "Atome Cl", 17, 17, "17 × (+e) + 17 × (−e) = 0", false),
+    dessinAtome(410, "Ion Cl⁻", 17, 18, "17 × (+e) + 18 × (−e) = −e", true),
+    "gagne 1 e⁻", "L’atome de chlore gagne un électron (en rouge) et devient l’ion Cl⁻.");
+  dessinerCristal();
+  remplirTableSolides();
+  dessinerBandeau();
+  window.addEventListener("resize", dessinerBandeau);
+
+  // Identité déjà enregistrée ?
+  if (etat.identite) {
+    $("#prenom").value = etat.identite.prenom; $("#nom").value = etat.identite.nom.charAt(0); $("#classe").value = etat.identite.classe;
+    $("#commencer").textContent = "Reprendre l’atelier";
+  }
+
+  // Onglets
+  $$(".onglet").forEach(o => o.addEventListener("click", () => ouvrir(o.dataset.cible)));
+
+  // Démarrage
+  $("#commencer").addEventListener("click", () => {
+    const prenom = $("#prenom").value.trim(), nom = $("#nom").value.trim().toUpperCase(), classe = $("#classe").value.trim();
+    const msg = $("#message-identite");
+    if (!prenom || !nom || !classe) {
+      msg.className = "message erreur";
+      msg.textContent = "Complète les trois champs : prénom, première lettre du nom et classe.";
+      (!prenom ? $("#prenom") : !nom ? $("#nom") : $("#classe")).focus();
+      return;
+    }
+    if (!/^[A-ZÀ-ÖØ-Þ]$/.test(nom)) {
+      msg.className = "message erreur";
+      msg.textContent = "Pour le nom, écris seulement la première lettre de ton nom de famille.";
+      $("#nom").focus();
+      return;
+    }
+    msg.textContent = "";
+    etat.identite = { prenom, nom, classe };
+    sauvegarder(); majInterface();
+    const suivante = !etat.parties[0].reussie ? "p1" : !etat.parties[1].reussie ? "p2" : !etat.parties[2].reussie ? "p3" : "bilan";
+    ouvrir(suivante);
+  });
+
+  // Confort de lecture
+  $("#bouton-confort").addEventListener("click", e => {
+    const panneau = $("#confort"); panneau.hidden = !panneau.hidden;
+    e.currentTarget.setAttribute("aria-expanded", String(!panneau.hidden));
+  });
+  $$(".choix[data-reglage] button").forEach(b => b.addEventListener("click", () => {
+    etat.reglages[b.parentElement.dataset.reglage] = b.dataset.valeur;
+    sauvegarder(); appliquerReglages();
+    if (b.parentElement.dataset.reglage === "contraste") dessinerBandeau();
+  }));
+  $("#stop-voix").addEventListener("click", () => "speechSynthesis" in window && speechSynthesis.cancel());
+  $$("[data-lire]").forEach(b => b.addEventListener("click", () => lireAVoixHaute($("#" + b.dataset.lire))));
+  if (!("speechSynthesis" in window)) $$(".lire, [data-aide='ecouter']").forEach(b => (b.hidden = true));
+
+  // Aide-mémoire
+  $("#bouton-aide").addEventListener("click", () => $("#aide-memoire").showModal());
+  $("#fermer-aide").addEventListener("click", () => $("#aide-memoire").close());
+
+  // Base de données filtrable
+  $("#filtre-solides").addEventListener("input", e => remplirTableSolides(e.target.value));
+
+  // Bilan
+  $("#envoyer").addEventListener("click", envoyerResultats);
+  $("#copier").addEventListener("click", async () => {
+    const zone = $("#texte-secours");
+    try { await navigator.clipboard.writeText(zone.value); $("#copier").textContent = "Texte copié"; }
+    catch (e) { zone.select(); }
+  });
+  let confirmation = false;
+  $("#reinitialiser").addEventListener("click", () => {
+    const msg = $("#message-reinit");
+    if (!confirmation) {
+      confirmation = true;
+      msg.textContent = "Clique une seconde fois sur « Tout effacer » pour confirmer.";
+      return;
+    }
+    const reglages = etat.reglages;
+    etat = etatVide(); etat.reglages = reglages;
+    enCours[1] = enCours[2] = enCours[3] = null;
+    sauvegarder();
+    ["#prenom", "#nom", "#classe"].forEach(s => ($(s).value = ""));
+    $("#commencer").textContent = "Commencer l’atelier";
+    confirmation = false; msg.textContent = "Progression effacée.";
+    majInterface(); ouvrir("accueil");
+  });
+
+  // Mode professeur
+  $$("[data-prof]").forEach(b => b.addEventListener("click", () => actionProf(b.dataset.prof)));
+  window.addEventListener("hashchange", majModeProf);
+
+  appliquerReglages();
+  majModeProf();
+  ouvrir("accueil");
+}
+
+demarrer();
+</script>
+</body>
+</html>

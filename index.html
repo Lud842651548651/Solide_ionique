@@ -166,6 +166,7 @@ svg text{fill:var(--encre); font-family:var(--f-texte)}
 .formulaire label{display:grid; gap:4px; font-weight:700; font-size:.92em}
 .formulaire input{padding:8px 10px; border:1px solid var(--trait); border-radius:8px; background:var(--papier); font-weight:400}
 .message{font-size:.95em}
+.boutons-bilan{display:flex; flex-wrap:wrap; gap:8px}
 .message.erreur{color:var(--ko)}
 textarea{width:100%; min-height:8rem; font:.85em/1.4 ui-monospace, monospace; border:1px solid var(--trait); border-radius:8px; padding:8px; background:var(--papier); color:var(--encre)}
 
@@ -258,9 +259,9 @@ dialog::backdrop{background:rgba(10,20,25,.55)}
 <!-- ============================ ACCUEIL ============================ -->
 <section class="partie" id="accueil" role="tabpanel" aria-labelledby="onglet-accueil">
   <h2>Avant de commencer</h2>
-  <p>L’atelier comporte trois parties. Chacune commence par un cours, puis un questionnaire de <b>5 questions</b>.</p>
+  <p>L’atelier comporte trois parties. Chacune commence par un cours, puis un questionnaire : <b>5 questions</b> dans la partie 1, <b>10</b> dans la partie 2, <b>7</b> dans la partie 3.</p>
   <ul>
-    <li>Il faut au moins <b>4 bonnes réponses sur 5 (80 %)</b> pour débloquer la partie suivante.</li>
+    <li>Il faut au moins <b>80 % de bonnes réponses</b> pour débloquer la partie suivante : 4 sur 5, 8 sur 10, 6 sur 7.</li>
     <li>Une réponse validée ne peut plus être changée. Si tu n’atteins pas 80 %, tu recommences avec <b>de nouvelles questions</b>.</li>
     <li>Sous chaque question, deux aides sont possibles : un <b>coup de pouce</b> (un indice) et <b>« retirer une réponse fausse »</b>. Elles ne font pas perdre de point.</li>
     <li>Le bouton <b>Aide-mémoire</b> (en haut) rappelle les charges des particules et la liste des ions.</li>
@@ -508,7 +509,11 @@ dialog::backdrop{background:rgba(10,20,25,.55)}
     <tbody></tbody>
   </table></div>
   <p id="bilan-total"></p>
-  <button class="btn" id="envoyer" type="button">Envoyer mes résultats au professeur</button>
+  <div class="boutons-bilan">
+    <button class="btn" id="envoyer" type="button">Envoyer mes résultats</button>
+    <button class="btn secondaire" id="recommencer" type="button">Recommencer pour améliorer mes résultats</button>
+  </div>
+  <p class="message" id="message-recommencer" aria-live="polite"></p>
   <p class="message" id="message-envoi" aria-live="polite"></p>
   <div id="secours" hidden>
     <p>Si l’envoi ne fonctionne pas, copie ce texte et transmets-le à ton professeur :</p>
@@ -585,10 +590,11 @@ dialog::backdrop{background:rgba(10,20,25,.55)}
 const REGLAGES = {
   urlWorker: "https://resultatpolenord.lud-tek.workers.dev/",
   nomDuJeu: "atelier_des_ions",
-  questionsParPartie: 5,
-  seuilReussite: 0.8,          // 80 % → 4 bonnes réponses sur 5
+  questionsParPartie: { 1: 5, 2: 10, 3: 7 },
+  seuilReussite: 0.8,          // au moins 80 % : 4/5, 8/10, 6/7
   cleSauvegarde: "atelier-des-ions-v1"
 };
+const nbQuestions = n => REGLAGES.questionsParPartie[n];
 
 
 /* =====================================================================
@@ -740,6 +746,12 @@ const SOLIDES = [
   ["K", "NO3", "nitrate de potassium",        "« salpêtre » : engrais ; conservateur des charcuteries (E252)", true,  "jardin cuisine"],
   ["Ca","PO4", "phosphate de calcium",        "partie minérale des os et des dents ; engrais", false, "santé dent jardin"]
 ].map(([cation, anion, nom, usage, soluble, categorie]) => construireSolide(cation, anion, nom, usage, soluble, categorie));
+
+/* Articles avec élision : "le chlorure…" mais "l’oxyde…", "du sulfate…" mais "de l’hydroxyde…" */
+const voyelle = nom => /^[aeiouyhéèêœ]/i.test(nom);
+const leNom = (nom, majuscule = false) => (voyelle(nom) ? "l’" : "le ") .replace(/^l/, majuscule ? "L" : "l") + nom;
+const duNom = nom => (voyelle(nom) ? "de l’" : "du ") + nom;
+const deNom = nom => (voyelle(nom) ? "d’" : "de ") + nom;
 
 /* Plus grand diviseur commun */
 function pgcd(a, b) { return b === 0 ? a : pgcd(b, a % b); }
@@ -1007,6 +1019,56 @@ const description = (n, ionX) => `${n} ${n > 1 ? "ions" : "ion"} ${ionX.f}`;
 
 const TYPES_P2 = {
 
+  formuleDuNomDuSolide() {
+    const s = auHasard(SOLIDES);
+    return qcm({
+      enonce: `Quelle est la formule ${duNom(s.nom)} ?`,
+      bonne: s.formule, mauvaises: melanger(formulesFausses(s)),
+      explication: `${s.nom} : ions ${s.cation.f} et ${s.anion.f}, ${description(s.nC, s.cation)} pour ${description(s.nA, s.anion)}, donc ${s.formule}.`,
+      indice: "Le nom donne l’anion puis le cation. Cherche leurs formules dans l’aide-mémoire, puis équilibre les charges."
+    });
+  },
+
+  quelIonDansLeSolide() {
+    const s = auHasard(SOLIDES), chercheAnion = Math.random() < 0.5;
+    const anions = Object.values(IONS).filter(x => x.charge < 0), cations = Object.values(IONS).filter(x => x.charge > 0);
+    const bon = chercheAnion ? s.anion : s.cation;
+    const autres = melanger((chercheAnion ? anions : cations).filter(x => x.f !== bon.f)).slice(0, 2).map(x => x.f);
+    return qcm({
+      enonce: `Quel est ${chercheAnion ? "l’anion" : "le cation"} présent dans ${leNom(s.nom)} (${s.formule}) ?`,
+      bonne: bon.f, mauvaises: [...autres, (chercheAnion ? s.cation : s.anion).f],
+      explication: `${leNom(s.nom, true)} contient les ions ${s.cation.f} (${s.cation.nom}) et ${s.anion.f} (${s.anion.nom}).`,
+      indice: chercheAnion ? "L’anion est l’ion négatif ; il est nommé en premier dans le nom du solide." : "Le cation est l’ion positif ; il est écrit en premier dans la formule."
+    });
+  },
+
+  nomDeLIon() {
+    const s = auHasard(SOLIDES), choisi = Math.random() < 0.5 ? s.anion : s.cation;
+    const memeSigne = Object.values(IONS).filter(x => Math.sign(x.charge) === Math.sign(choisi.charge) && x.nom !== choisi.nom);
+    return qcm({
+      enonce: `${leNom(s.nom, true)} contient l’ion ${choisi.f}. Comment s’appelle cet ion ?`,
+      bonne: choisi.nom, mauvaises: melanger(memeSigne).slice(0, 3).map(x => x.nom),
+      explication: `${choisi.f} est l’${choisi.nom}.`,
+      indice: "Le nom du solide contient le nom de ses ions."
+    });
+  },
+
+  compléterDissolution() {
+    const s = auHasard(SOLIDES.filter(x => x.soluble)), c = s.cation, a = s.anion, coef = n => (n === 1 ? "" : n + " ");
+    const caseCation = { bonne: coef(s.nC) + c.f, options: [coef(s.nC) + c.f, coef(s.nA) + c.f, coef(s.nC + 1) + c.f, morceauFormule(c, s.nC)] };
+    const caseAnion  = { bonne: coef(s.nA) + a.f, options: [coef(s.nA) + a.f, coef(s.nC) + a.f, coef(s.nA + 1) + a.f, morceauFormule(a, s.nA)] };
+    const cases = Math.random() < 0.5 ? [caseCation, caseAnion] : [auHasard([caseCation, caseAnion])];
+    const morceau = k => cases.includes(k) ? { bonne: k.bonne, options: melanger(sansDoublons(k.options)) } : k.bonne;
+    return {
+      type: "trous",
+      enonce: `Complète l’équation de dissolution ${duNom(s.nom)} dans l’eau :`,
+      modele: [`${s.formule}(s) → `, morceau(caseCation), "(aq) + ", morceau(caseAnion), "(aq)"],
+      bonne: s.dissolution,
+      explication: `Équation complète : ${s.dissolution}. Les indices de la formule deviennent les nombres devant les ions, et la charge totale à droite est nulle.`,
+      indice: "Les ions gardent leur charge dans l’eau. Les indices de la formule donnent combien il y a de chaque ion."
+    };
+  },
+
   formuleDesIons() {
     const s = auHasard(SOLIDES);
     return qcm({
@@ -1023,7 +1085,7 @@ const TYPES_P2 = {
     return qcm({
       enonce: `Quel est le nom du solide ionique de formule ${s.formule} ?`,
       bonne: s.nom, mauvaises: autres,
-      explication: `${s.formule} est formé d’ions ${s.cation.f} (${s.cation.nom}) et ${s.anion.f} (${s.anion.nom}) : c’est le ${s.nom}. Usage : ${s.usage}.`,
+      explication: `${s.formule} est formé d’ions ${s.cation.f} (${s.cation.nom}) et ${s.anion.f} (${s.anion.nom}) : c’est ${leNom(s.nom)}. Usage : ${s.usage}.`,
       indice: "Le nom commence par l’anion (chlorure, oxyde, carbonate…), puis « de » et le cation."
     });
   },
@@ -1039,7 +1101,7 @@ const TYPES_P2 = {
       `${description(s.nC, s.cation)} pour ${description(s.nA + 1, s.anion)}`
     ];
     return qcm({
-      enonce: `Le ${s.nom} a pour formule ${s.formule}. De quoi est-il constitué ?`,
+      enonce: `${leNom(s.nom, true)} a pour formule ${s.formule}. De quoi est-il constitué ?`,
       bonne, mauvaises,
       explication: `La formule ${s.formule} indique la proportion : ${bonne}. Ce n’est pas une molécule.`,
       indice: "Les indices de la formule donnent le nombre de chaque ion."
@@ -1053,7 +1115,7 @@ const TYPES_P2 = {
     return qcm({
       enonce: `Quel solide ionique correspond à cet usage : ${s.usage} ?`,
       bonne: etiquette(s), mauvaises: autres.map(etiquette),
-      explication: `C’est le ${s.nom}, ${s.formule}.`,
+      explication: `C’est ${leNom(s.nom)}, ${s.formule}.`,
       indice: "Tu peux chercher un mot de l’usage dans la base de données du cours."
     });
   },
@@ -1062,7 +1124,7 @@ const TYPES_P2 = {
     const s = auHasard(SOLIDES.filter(x => x.soluble));
     const c = s.cation, a = s.anion, coef = n => (n === 1 ? "" : n + " ");
     return qcm({
-      enonce: `Quelle équation modélise la dissolution du ${s.nom} dans l’eau ?`,
+      enonce: `Quelle équation modélise la dissolution ${duNom(s.nom)} dans l’eau ?`,
       bonne: s.dissolution,
       mauvaises: [
         `${s.formule}(s) → ${coef(s.nA)}${c.f}(aq) + ${coef(s.nC)}${a.f}(aq)`,
@@ -1079,7 +1141,7 @@ const TYPES_P2 = {
     const s = auHasard(SOLIDES.filter(x => x.nC !== x.nA || x.nC > 1 || Math.abs(x.anion.charge) > 1));
     const choix = melanger(["1", "2", "3", "4"].filter(n => n !== String(s.nA)));
     return qcm({
-      enonce: `Le ${s.nom} est formé d’ions ${s.cation.f} et ${s.anion.f}. Pour ${description(s.nC, s.cation)}, combien faut-il d’ions ${s.anion.f} pour que le solide soit neutre ?`,
+      enonce: `${leNom(s.nom, true)} est formé d’ions ${s.cation.f} et ${s.anion.f}. Pour ${description(s.nC, s.cation)}, combien faut-il d’ions ${s.anion.f} pour que le solide soit neutre ?`,
       bonne: String(s.nA), mauvaises: choix,
       explication: `${s.nC} × (+${s.cation.charge}) = +${s.nC * s.cation.charge}, compensé par ${s.nA} × (${s.anion.charge}) = ${s.nA * s.anion.charge}. Formule : ${s.formule}.`,
       indice: "Calcule la charge positive totale, puis le nombre d’anions qui donne la même charge négative."
@@ -1089,7 +1151,7 @@ const TYPES_P2 = {
   chargeTotale() {
     const s = auHasard(SOLIDES);
     return qcm({
-      enonce: `Un cristal de ${s.nom} (${s.formule}) contient des milliards de milliards d’ions. Quelle est sa charge électrique totale ?`,
+      enonce: `Un cristal ${deNom(s.nom)} (${s.formule}) contient des milliards de milliards d’ions. Quelle est sa charge électrique totale ?`,
       bonne: "nulle : les charges + compensent exactement les charges −",
       mauvaises: ["positive, car le cation est écrit en premier", "négative, car il y a plus d’anions", `égale à la charge d’un ion ${s.cation.f}`],
       explication: "La matière est électriquement neutre à l’échelle macroscopique : c’est l’électroneutralité.",
@@ -1219,9 +1281,86 @@ const TYPES_P3 = {
   }
 };
 
-/* Tire les 5 questions d’une tentative */
+/* Solides ioniques formés uniquement des ions à connaître (Na⁺, K⁺, Ca²⁺, Mg²⁺, Cl⁻, F⁻) */
+const NOM_CATION = { Na: "sodium", K: "potassium", Ca: "calcium", Mg: "magnésium" };
+const NOM_ANION  = { Cl: "chlorure", F: "fluorure" };
+const SOLIDES_CONNUS = [];
+for (const cat of Object.keys(NOM_CATION)) for (const an of Object.keys(NOM_ANION))
+  SOLIDES_CONNUS.push(construireSolide(cat, an, `${NOM_ANION[an]} de ${NOM_CATION[cat]}`, "", true, ""));
+const plurielIon = nom => nom.replace(/^ion /, "ions ");   // "ion sodium" → "ions sodium"
+const MOLECULES = ENTITES.filter(e => e.type === "molécule");
+
+/* Nombre d’atomes d’une molécule : "C_6H_12O_6" → 24 */
+function nombreAtomes(formule) {
+  let total = 0;
+  formule.replace(/([A-Z][a-z]?)(?:_(\d+))?/g, (_, symbole, n) => { total += n ? Number(n) : 1; });
+  return total;
+}
+
+/* Questions ajoutées à la partie 3 : une sur les molécules, une sur les solides ioniques */
+const TYPES_P3_MOLECULES = {
+  combienDAtomes() {
+    const m = auHasard(MOLECULES.filter(x => nombreAtomes(x.f) > 2)), n = nombreAtomes(m.f);
+    return qcm({
+      enonce: `Combien d’atomes contient une molécule de ${m.nom} (${m.f}) ?`,
+      bonne: String(n), mauvaises: melanger([n - 1, n + 1, n + 2, n - 2].filter(x => x > 0)).map(String),
+      explication: `On additionne les indices (un symbole sans indice compte pour 1) : ${m.f} contient ${n} atomes.`,
+      indice: "Un chiffre en indice indique le nombre d’atomes de l’élément juste avant. Pas d’indice = 1 atome."
+    });
+  },
+  laquelleEstUneMolecule() {
+    const m = auHasard(MOLECULES);
+    const autres = melanger(SOLIDES_CONNUS).slice(0, 3).map(x => x.formule);
+    return qcm({
+      enonce: "Laquelle de ces formules représente une molécule ?",
+      bonne: m.f, mauvaises: autres,
+      explication: `${m.f} (${m.nom}) est une molécule. Les autres formules (${autres.join(", ")}) sont celles de solides ioniques : elles associent un métal (Na, K, Ca, Mg) à Cl ou F.`,
+      indice: "Les formules commençant par Na, K, Ca ou Mg et contenant Cl ou F sont celles de solides ioniques."
+    });
+  }
+};
+const TYPES_P3_SOLIDES = {
+  moleculeOuSolideIonique() {
+    const estIonique = Math.random() < 0.5;
+    const choix = estIonique ? auHasard(SOLIDES_CONNUS) : auHasard(MOLECULES);
+    const f = estIonique ? choix.formule : choix.f;
+    const IONIQUE = "d’ions : c’est un solide ionique", MOLECULAIRE = "de molécules identiques";
+    return qcm({
+      enonce: `L’espèce chimique de formule ${f} est formée…`,
+      bonne: estIonique ? IONIQUE : MOLECULAIRE,
+      mauvaises: [estIonique ? MOLECULAIRE : IONIQUE, "d’atomes isolés"],
+      explication: estIonique
+        ? `${f} (${choix.nom}) est formé d’ions ${choix.cation.f} et ${choix.anion.f} : ce n’est pas une molécule.`
+        : `${f} (${choix.nom}) est formé de molécules identiques, sans charge.`,
+      indice: "Un métal (Na, K, Ca, Mg) associé à Cl ou F donne un solide ionique."
+    });
+  },
+  ionsDuSolideConnu() {
+    const s = auHasard(SOLIDES_CONNUS), c = s.cation, a = s.anion;
+    const signeInverse = x => x.base + "^" + (Math.abs(x.charge) === 1 ? "" : Math.abs(x.charge)) + (x.charge > 0 ? "-" : "+");
+    return qcm({
+      enonce: `${leNom(s.nom, true)} a pour formule ${s.formule}. Quels ions le constituent ?`,
+      bonne: `des ions ${c.f} et des ions ${a.f}`,
+      mauvaises: [`des ions ${signeInverse(c)} et des ions ${signeInverse(a)}`, `des molécules ${s.formule}`,
+                  `des ions ${c.f} et des ions ${auHasard(["Cl_2", "F_2"])}`],
+      explication: `${leNom(s.nom, true)} contient des ${plurielIon(c.nom)} ${c.f} et des ${plurielIon(a.nom)} ${a.f}.`,
+      indice: "Le métal forme le cation (+), le chlore ou le fluor forme l’anion (−)."
+    });
+  },
+  formuleSolideConnu() {
+    const s = auHasard(SOLIDES_CONNUS);
+    return qcm({
+      enonce: `Un solide ionique est formé d’${plurielIon(s.cation.nom)} et d’${plurielIon(s.anion.nom)}. Quelle est sa formule ?`,
+      bonne: s.formule, mauvaises: melanger(formulesFausses(s)),
+      explication: `${s.cation.nom} : ${s.cation.f} ; ${s.anion.nom} : ${s.anion.f}. Il faut ${description(s.nC, s.cation)} pour ${description(s.nA, s.anion)} : ${s.formule} (${s.nom}).`,
+      indice: "Écris d’abord les deux ions avec leur charge (ce sont des ions à connaître), puis rends la charge totale nulle."
+    });
+  }
+};
+
+/* Tire les questions d’une tentative */
 function tirerQuestions(numeroPartie) {
-  const n = REGLAGES.questionsParPartie;
+  const n = nbQuestions(numeroPartie);
   if (numeroPartie === 1) {
     // Partie 1 : toujours 2 équations à compléter (deux ions différents), plus 3 autres types
     const { compléterÉquation, ...autresP1 } = TYPES_P1;
@@ -1231,12 +1370,15 @@ function tirerQuestions(numeroPartie) {
     return melanger([t1, t2, ...melanger(Object.values(autresP1)).slice(0, n - 2).map(f => f())]);
   }
   if (numeroPartie === 2) return melanger(Object.values(TYPES_P2)).slice(0, n).map(f => f());
-  // Partie 3 : toujours 2 questions « qualifier » (capacité centrale), plus 3 autres types
+  // Partie 3 : 2 questions « qualifier » (capacité centrale), 1 sur les molécules,
+  // 1 sur les solides ioniques formés d’ions connus, et le reste parmi les autres types
   const { qualifier, ...autres } = TYPES_P3;
   let q1 = qualifier(), q2 = qualifier();
   while (q2.enonce === q1.enonce) q2 = qualifier();
-  const reste = melanger(Object.values(autres)).slice(0, n - 2).map(f => f());
-  return melanger([q1, q2, ...reste]);
+  const molecule = auHasard(Object.values(TYPES_P3_MOLECULES))();
+  const solide = auHasard(Object.values(TYPES_P3_SOLIDES))();
+  const reste = melanger(Object.values(autres)).slice(0, n - 4).map(f => f());
+  return melanger([q1, q2, molecule, solide, ...reste]);
 }
 
 /* ===================== FIN DES DONNÉES ===================== */
@@ -1310,7 +1452,7 @@ function construireEnvoi() {
   const date = new Date().toLocaleString("fr-FR");
   const initiale = id.nom.trim().charAt(0).toUpperCase() + ".";
   const details = etat.parties.map((p, i) =>
-    `P${i + 1} ${p.reussie ? "réussie" : "non réussie"} (${p.tentatives} essai(s), meilleur ${p.meilleur}/5, aides ${p.aides})`
+    `P${i + 1} ${p.reussie ? "réussie" : "non réussie"} (${p.tentatives} essai(s), meilleur ${p.meilleur}/${nbQuestions(i + 1)}, aides ${p.aides})`
   ).join(" ; ");
   const marque = profUtilise ? "[TEST PROF] " : "";
   const ligne = `${marque}${date} | ${id.prenom} ${initiale} | ${id.classe} | parties réussies ${reussies}/3 | ` +
@@ -1371,7 +1513,7 @@ async function envoyerResultats() {
 /* =====================================================================
    10. AFFICHAGE DES QUESTIONNAIRES
    ===================================================================== */
-const seuil = () => Math.ceil(REGLAGES.questionsParPartie * REGLAGES.seuilReussite);
+const seuil = n => Math.ceil(nbQuestions(n) * REGLAGES.seuilReussite - 1e-9);
 
 function nouvelleTentative(n) {
   enCours[n] = { questions: tirerQuestions(n), reponses: [] };
@@ -1383,7 +1525,7 @@ function afficherQuiz(n) {
   zone.innerHTML = `
     <div class="quiz-tete">
       <h3>Questionnaire · tentative ${stats.tentatives + 1}</h3>
-      <span>${seuil()} bonnes réponses sur ${REGLAGES.questionsParPartie} pour réussir</span>
+      <span>${seuil(n)} bonnes réponses sur ${nbQuestions(n)} pour réussir</span>
     </div>
     ${serie.questions.map((q, i) => htmlQuestion(n, q, i)).join("")}
     <div class="resultat" hidden aria-live="polite"></div>`;
@@ -1515,23 +1657,24 @@ function terminerTentative(n) {
   const score = serie.reponses.filter(Boolean).length, total = serie.questions.length;
   stats.tentatives++;
   stats.meilleur = Math.max(stats.meilleur, score);
-  const reussi = score >= seuil();
+  const reussi = score >= seuil(n);
   const zone = $("#quiz-p" + n + " .resultat");
   zone.hidden = false;
 
   if (reussi) {
     stats.reussie = true;
     zone.className = "resultat reussi";
-    zone.innerHTML = n < 3
-      ? `<p><b>Partie réussie : ${score}/${total}.</b> La partie ${n + 1} est débloquée.</p>
-         <button class="btn" type="button" id="suite-${n}">Passer à la partie ${n + 1}</button>`
-      : `<p><b>Partie réussie : ${score}/${total}. Tu as terminé l’atelier !</b> Tes résultats sont envoyés à ton professeur.</p>
-         <button class="btn" type="button" id="suite-${n}">Voir mon bilan</button>`;
-    $("#suite-" + n).addEventListener("click", () => ouvrir(n < 3 ? "p" + (n + 1) : "bilan"));
-    if (n === 3) { sauvegarder(); majInterface(); envoyerResultats(); }
+    if (n === 3) {                       // atelier terminé : on va directement au bilan
+      sauvegarder(); majInterface();
+      ouvrir("bilan");
+      return;
+    }
+    zone.innerHTML = `<p><b>Partie réussie : ${score}/${total}.</b> La partie ${n + 1} est débloquée.</p>
+         <button class="btn" type="button" id="suite-${n}">Passer à la partie ${n + 1}</button>`;
+    $("#suite-" + n).addEventListener("click", () => ouvrir("p" + (n + 1)));
   } else {
     zone.className = "resultat rate";
-    zone.innerHTML = `<p><b>Score : ${score}/${total}.</b> Il faut au moins ${seuil()} bonnes réponses. Relis « L’essentiel » et les explications ci-dessus, puis recommence : les questions seront différentes.</p>
+    zone.innerHTML = `<p><b>Score : ${score}/${total}.</b> Il faut au moins ${seuil(n)} bonnes réponses. Relis « L’essentiel » et les explications ci-dessus, puis recommence : les questions seront différentes.</p>
       <button class="btn" type="button" id="encore-${n}">Recommencer avec de nouvelles questions</button>`;
     $("#encore-" + n).addEventListener("click", () => { nouvelleTentative(n); $("#quiz-p" + n).scrollIntoView(); });
   }
@@ -1580,12 +1723,13 @@ function majInterface() {
 
 function afficherBilan() {
   const id = etat.identite;
-  $("#bilan-intro").textContent = id
-    ? `${id.prenom} ${id.nom.charAt(0).toUpperCase()}. · ${id.classe} · temps passé : ${texteTemps(etat.tempsMs)}`
+  $("#bilan-intro").innerHTML = id
+    ? (etat.parties[2].reussie ? "<b>Bravo, tu as terminé les trois parties !</b> Envoie tes résultats à ton professeur, ou recommence pour les améliorer.<br>" : "") +
+      `${id.prenom} ${id.nom.charAt(0).toUpperCase()}. · ${id.classe} · temps passé : ${texteTemps(etat.tempsMs)}`
     : "Commence par l’accueil.";
   $("#table-bilan tbody").innerHTML = etat.parties.map((p, i) => `
     <tr><td>Partie ${i + 1}</td><td>${p.reussie ? "oui" : "non"}</td><td class="num">${p.tentatives}</td>
-        <td class="num">${p.meilleur}/5</td><td class="num">${p.bonnes}/${p.repondues}</td><td class="num">${p.aides}</td></tr>`).join("");
+        <td class="num">${p.meilleur}/${nbQuestions(i + 1)}</td><td class="num">${p.bonnes}/${p.repondues}</td><td class="num">${p.aides}</td></tr>`).join("");
   const b = etat.parties.reduce((t, p) => t + p.bonnes, 0), r = etat.parties.reduce((t, p) => t + p.repondues, 0);
   $("#bilan-total").innerHTML = `<b>Total : ${b} bonnes réponses sur ${r} (${r ? Math.round(100 * b / r) : 0} %).</b>` +
     (etat.parties[2].reussie ? "" : " Tu n’as pas encore terminé : tu peux quand même envoyer où tu en es.");
@@ -1843,6 +1987,24 @@ function demarrer() {
     try { await navigator.clipboard.writeText(zone.value); $("#copier").textContent = "Texte copié"; }
     catch (e) { zone.select(); }
   });
+  // Recommencer : on garde l’identité, on remet les trois parties et le chrono à zéro
+  let confirmationRecommencer = false;
+  $("#recommencer").addEventListener("click", () => {
+    const msg = $("#message-recommencer");
+    if (!confirmationRecommencer) {
+      confirmationRecommencer = true;
+      msg.textContent = "Tes résultats actuels seront remplacés par ceux de ta nouvelle tentative. Clique une seconde fois pour confirmer.";
+      return;
+    }
+    confirmationRecommencer = false; msg.textContent = "";
+    const neuf = etatVide();
+    etat.parties = neuf.parties; etat.tempsMs = 0; etat.envoye = false;
+    enCours[1] = enCours[2] = enCours[3] = null;
+    $("#secours").hidden = true; $("#message-envoi").textContent = "";
+    sauvegarder(); majInterface();
+    ouvrir("p1");
+  });
+
   let confirmation = false;
   $("#reinitialiser").addEventListener("click", () => {
     const msg = $("#message-reinit");

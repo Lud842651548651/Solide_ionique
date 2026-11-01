@@ -101,6 +101,9 @@ button,input,select{font:inherit; color:inherit}
 .onglet{border:1px solid var(--trait); background:transparent; border-radius:8px; padding:6px 12px; cursor:pointer}
 .onglet[aria-selected="true"]{background:var(--accent); border-color:var(--accent); color:var(--papier)}
 .onglet:disabled{opacity:.5; cursor:not-allowed}
+a.outil,a.btn{text-decoration:none; display:inline-block}
+.telechargement{display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:var(--accent-doux); border:1px solid var(--accent); border-radius:10px; padding:10px 14px}
+.telechargement p{margin:0; flex:1 1 16rem}
 .outil{border:1px solid var(--accent); color:var(--accent); background:transparent; border-radius:8px; padding:6px 12px; cursor:pointer}
 .confort{border-top:1px solid var(--trait); background:var(--accent-doux)}
 .confort .enveloppe{display:grid; gap:10px 18px; grid-template-columns:repeat(auto-fit,minmax(13rem,1fr)); padding-block:12px}
@@ -222,6 +225,7 @@ dialog::backdrop{background:rgba(10,20,25,.55)}
       <button class="onglet" role="tab" id="onglet-p3" data-cible="p3">3 · Entités</button>
       <button class="onglet" role="tab" id="onglet-bilan" data-cible="bilan">Bilan</button>
     </div>
+    <a class="outil" href="chapitre3_modelisation_matiere.pdf" download>Cours en PDF</a>
     <button class="outil" id="bouton-aide" type="button">Aide-mémoire</button>
     <button class="outil" id="bouton-confort" type="button" aria-expanded="false" aria-controls="confort">Confort de lecture</button>
   </div>
@@ -270,6 +274,10 @@ dialog::backdrop{background:rgba(10,20,25,.55)}
     <li><b>Ton activité est enregistrée</b> : le temps passé sur chaque question, les sorties de la page (changement d’onglet ou d’application) et les copies de texte. Ces informations sont transmises à ton professeur avec tes résultats. Reste sur la page et réponds seul·e.</li>
     <li>Le bouton <b>Confort de lecture</b> permet d’agrandir le texte, de changer de police, de renforcer le contraste ou d’écouter le texte.</li>
   </ul>
+  <div class="telechargement">
+    <p><b>Le cours complet du chapitre 3</b> (fiche complétée, ions, solides ioniques du quotidien) est disponible en PDF, pour réviser ou l’imprimer.</p>
+    <a class="btn" href="chapitre3_modelisation_matiere.pdf" download>Télécharger le cours (PDF)</a>
+  </div>
   <h3>Qui es-tu ?</h3>
   <form id="identite" class="formulaire" novalidate>
     <label for="prenom">Prénom<input id="prenom" autocomplete="given-name" required></label>
@@ -543,6 +551,10 @@ dialog::backdrop{background:rgba(10,20,25,.55)}
     <label class="cache-visuel" for="texte-secours">Résultats à copier</label>
     <textarea id="texte-secours" readonly></textarea>
     <button class="btn secondaire" id="copier" type="button">Copier le texte</button>
+  </div>
+  <div class="telechargement">
+    <p><b>Le cours complet du chapitre 3</b> (fiche complétée, ions, solides ioniques du quotidien) est disponible en PDF, pour réviser ou l’imprimer.</p>
+    <a class="btn" href="chapitre3_modelisation_matiere.pdf" download>Télécharger le cours (PDF)</a>
   </div>
   <h3>Recommencer à zéro</h3>
   <p>Efface la progression enregistrée sur cet appareil (à utiliser si un autre élève doit faire l’atelier).</p>
@@ -1477,7 +1489,9 @@ function etatVide() {
     identite: null,                 // { prenom, nom, classe }
     tempsMs: 0,                     // temps total passé
     parties: [1, 2, 3].map(() => ({
-      reussie: false, tentatives: 0, meilleur: 0, bonnes: 0, repondues: 0, aides: 0
+      reussie: false, tentatives: 0, meilleur: 0, bonnes: 0, repondues: 0, aides: 0,
+      premierScore: null,           // score de la 1re tentative
+      tempsMs: 0                    // temps passé sur cette partie
     })),
     envoye: false,
     suivi: { sorties: 0, tempsDehorsMs: 0, copies: 0, temps: [], rapides: 0, apresSortie: 0 },
@@ -1515,6 +1529,8 @@ setInterval(() => {
   const maintenant = Date.now();
   if (chronoTourne() && dernierTop && document.visibilityState === "visible") {
     etat.tempsMs += maintenant - dernierTop;
+    const n = partieAffichee();
+    if (n) etat.parties[n - 1].tempsMs = (etat.parties[n - 1].tempsMs || 0) + (maintenant - dernierTop);
   }
   dernierTop = maintenant;
   $("#chrono").textContent = "⏱ " + formaterTemps(etat.tempsMs);
@@ -1526,42 +1542,56 @@ setInterval(sauvegarder, 5000);
    9. ENVOI DES RÉSULTATS AU WORKER
    ===================================================================== */
 function construireEnvoi() {
+  // Format attendu par le worker « résultats » (voir worker_resultats.js) :
+  //   prenom, initiale, classe, jeu, score, scoreMax, pourcentage, premierEssai,
+  //   temps, indices, erreurs, niveaux[], activite{}, test
   const id = etat.identite;
   const bonnes = etat.parties.reduce((t, p) => t + p.bonnes, 0);
   const repondues = etat.parties.reduce((t, p) => t + p.repondues, 0);
-  const pourcentage = repondues ? Math.round(100 * bonnes / repondues) : 0;
-  const reussies = etat.parties.filter(p => p.reussie).length;
-  const date = new Date().toLocaleString("fr-FR");
-  const initiale = id.nom.trim().charAt(0).toUpperCase() + ".";
-  const details = etat.parties.map((p, i) =>
-    `P${i + 1} ${p.reussie ? "réussie" : "non réussie"} (${p.tentatives} essai(s), meilleur ${p.meilleur}/${nbQuestions(i + 1)}, aides ${p.aides})`
-  ).join(" ; ");
-  const marque = profUtilise ? "[TEST PROF] " : "";
-  const ligne = `${marque}${date} | ${id.prenom} ${initiale} | ${id.classe} | parties réussies ${reussies}/3 | ` +
-                `${bonnes}/${repondues} bonnes réponses | ${pourcentage} % | ${texteTemps(etat.tempsMs)} | ${details} | ${resumeSuivi()}`;
+  const aides = etat.parties.reduce((t, p) => t + p.aides, 0);
+  const faites = etat.parties.map((p, i) => ({ p, n: nbQuestions(i + 1) })).filter(x => x.p.premierScore !== null);
+  const premierBonnes = faites.reduce((t, x) => t + x.p.premierScore, 0);
+  const premierTotal = faites.reduce((t, x) => t + x.n, 0);
+  const NOMS_PARTIES = ["P1 Ions", "P2 Solides ioniques", "P3 Entités"];
+  const suivi = etat.suivi;
   return {
     jeu: REGLAGES.nomDuJeu,
-    fichier: "resultats_" + REGLAGES.nomDuJeu + ".txt",
     prenom: id.prenom,
-    nom: initiale,
+    initiale: id.nom.trim().charAt(0).toUpperCase(),
     classe: id.classe,
-    score: `${marque}${bonnes}/${repondues} (parties réussies ${reussies}/3)`,
-    pourcentage: pourcentage,
-    partiesReussies: `${reussies}/3`,
-    // Le worker écrit le champ « temps » dans le fichier : on y joint l’activité
-    // pour qu’elle apparaisse sans modifier le worker.
-    temps: `${texteTemps(etat.tempsMs)} | ACTIVITÉ ${resumeCourt()}`,
-    date: date,
-    details: details,
-    modeProf: profUtilise,
-    suivi: resumeSuivi(),
-    sortiesDePage: etat.suivi.sorties,
-    copies: etat.suivi.copies,
-    tempsMedianParQuestion: mediane(etat.suivi.temps),
-    reponsesRapides: etat.suivi.rapides,
-    reponsesApresSortie: etat.suivi.apresSortie,
-    ligne: ligne
+    score: bonnes,
+    scoreMax: repondues,
+    pourcentage: repondues ? Math.round(100 * bonnes / repondues) : 0,
+    premierEssai: premierTotal ? Math.round(100 * premierBonnes / premierTotal) : 0,
+    temps: texteTemps(etat.tempsMs),
+    indices: aides,
+    erreurs: repondues - bonnes,
+    niveaux: etat.parties.map((p, i) => ({
+      nom: `${NOMS_PARTIES[i]} ${p.reussie ? "réussie" : "non réussie"}, ${p.tentatives} essai(s)`,
+      pct: p.repondues ? Math.round(100 * p.bonnes / p.repondues) : 0,
+      temps: texteTemps(p.tempsMs || 0),
+      premierEssai: p.premierScore === null ? "–" : `${p.premierScore}/${nbQuestions(i + 1)}`
+    })),
+    activite: {
+      sorties: suivi.sorties,
+      tempsHors: texteTemps(suivi.tempsDehorsMs),
+      copies: suivi.copies,
+      tempsMedian: String(mediane(suivi.temps)).replace(".", ","),
+      rapides: suivi.rapides,
+      apresSortie: suivi.apresSortie,
+      reponses: suivi.temps.length
+    },
+    test: profUtilise
   };
+}
+
+/* Texte de secours (si l’envoi échoue), lisible par le professeur */
+function texteDeSecours(d) {
+  return `${d.test ? "[TEST PROF] " : ""}${new Date().toLocaleString("fr-FR")} | ${d.classe} | ${d.prenom} ${d.initiale}. | ` +
+         `Score ${d.score}/${d.scoreMax} | Réussite ${d.pourcentage} % | 1er essai ${d.premierEssai} % | Temps ${d.temps} | ` +
+         `Indices ${d.indices} | Erreurs ${d.erreurs} | ` +
+         d.niveaux.map(n => `${n.nom} ${n.pct} % (${n.temps}, 1er essai ${n.premierEssai})`).join(" ; ") +
+         ` | Activité ${resumeCourt()}`;
 }
 
 async function envoyerResultats() {
@@ -1569,7 +1599,7 @@ async function envoyerResultats() {
   if (!etat.identite && modeProf()) etat.identite = { prenom: "Test", nom: "P", classe: "PROF" };
   if (!etat.identite) { message.textContent = "Remplis d’abord ton prénom, l’initiale de ton nom et ta classe dans l’accueil."; return; }
   const donnees = construireEnvoi();
-  $("#texte-secours").value = donnees.ligne;
+  $("#texte-secours").value = texteDeSecours(donnees);
   message.className = "message";
   message.textContent = "Envoi en cours…";
   $("#envoyer").disabled = true;
@@ -1832,6 +1862,7 @@ function terminerTentative(n) {
   const serie = enCours[n], stats = etat.parties[n - 1];
   const score = serie.reponses.filter(Boolean).length, total = serie.questions.length;
   stats.tentatives++;
+  if (stats.tentatives === 1) stats.premierScore = score;
   stats.meilleur = Math.max(stats.meilleur, score);
   const reussi = score >= seuil(n);
   const zone = $("#quiz-p" + n + " .resultat");
